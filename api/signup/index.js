@@ -59,7 +59,8 @@ module.exports = async function (context, req) {
 
     const result = await tableRequest('POST', '/users', entity);
     if (result.status >= 400) {
-      context.res = { status: 500, headers: HEADERS, body: { error: 'Failed to create account. Please try again.' } };
+      context.log.error('Table insert failed:', result.status, JSON.stringify(result.body));
+      context.res = { status: 500, headers: HEADERS, body: { error: 'Failed to create account: ' + (result.body && result.body.Message ? result.body.Message : 'status ' + result.status) } };
       return;
     }
 
@@ -69,7 +70,7 @@ module.exports = async function (context, req) {
       body: { token, user: { name, email } }
     };
   } catch (err) {
-    context.log.error('Signup error:', err.message);
-    context.res = { status: 500, headers: HEADERS, body: { error: 'Internal server error.' } };
+    context.log.error('Signup error:', err.message, err.stack);
+    context.res = { status: 500, headers: HEADERS, body: { error: 'Signup error: ' + err.message } };
   }
 };
