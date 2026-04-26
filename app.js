@@ -611,13 +611,13 @@ const getCurrentSlides = () => {
 };
 
 // ===============================================
-//  NARRATION (Web Speech API)
+//  NARRATION (Pre-generated Azure TTS MP3 Audio)
 // ===============================================
+const AUDIO_BASE = 'https://lmsaicoursestore.blob.core.windows.net/audio';
 const narration = {
   speaking: false,
   paused: false,
-  utterance: null,
-  currentText: '',
+  audio: null,
   autoAdvance: true
 };
 
@@ -632,35 +632,15 @@ const getSlideNarrationText = (slide) => {
   return text.trim();
 };
 
-const translateToHinglish = async (text) => {
-  const cacheKey = `${state.currentLessonId}-${state.currentSlide}`;
-
-  try {
-    const token = localStorage.getItem('lms_token') || '';
-    const res = await fetch('/api/hinglish', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
-      body: JSON.stringify({
-        lessonId: state.currentLessonId,
-        slideIndex: state.currentSlide,
-        text
-      })
-    });
-    if (!res.ok) throw new Error('Translation failed');
-    const data = await res.json();
-    return data.translation || text;
-  } catch (err) {
-    showToast('Hinglish translation failed, using English', 'error');
-    return text;
-  }
-};
-
 const stopNarration = () => {
-  window.speechSynthesis.cancel();
+  if (narration.audio) {
+    narration.audio.pause();
+    narration.audio.currentTime = 0;
+    narration.audio = null;
+  }
+  window.speechSynthesis.cancel(); // stop any browser TTS fallback
   narration.speaking = false;
   narration.paused = false;
-  narration.utterance = null;
-  narration.currentText = '';
   narration.autoAdvance = true;
   byId('narrate-btn').style.display = '';
   byId('narrate-btn').innerHTML = '<i class="fas fa-play"></i>';
@@ -668,111 +648,148 @@ const stopNarration = () => {
   byId('narrate-progress').style.display = 'none';
 };
 
-const speakText = (text, onEnd) => {
-  const lang = byId('narrate-lang').value;
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = lang === 'hi' ? 'hi-IN' : 'en-IN';
-  utterance.rate = 0.92;
-  utterance.pitch = 1;
+const playAudio = (url) => {
+  return new Promise((resolve, reject) => {
+    const audio = new Audio(url);
+    narration.audio = audio;
+    narration.speaking = true;
+    narration.paused = false;
 
-  const voices = window.speechSynthesis.getVoices();
-  const langPrefix = lang === 'hi' ? 'hi' : 'en';
-  const preferred = voices.find(v => v.lang.startsWith(langPrefix) && v.name.toLowerCase().includes('google'))
-    || voices.find(v => v.lang.startsWith(langPrefix))
-    || voices[0];
-  if (preferred) utterance.voice = preferred;
+    byId('narrate-btn').innerHTML = '<i class="fas fa-pause"></i>';
+    byId('narrate-stop-btn').style.display = '';
+    byId('narrate-progress').style.display = '';
 
-  narration.utterance = utterance;
-  narration.speaking = true;
-  narration.paused = false;
-  narration.currentText = text;
+    const fill = byId('narrate-bar-fill');
 
-  byId('narrate-btn').innerHTML = '<i class="fas fa-pause"></i>';
-  byId('narrate-stop-btn').style.display = '';
-  byId('narrate-progress').style.display = '';
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        const pct = (audio.currentTime / audio.duration) * 100;
+        fill.style.transition = 'none';
+        fill.style.width = pct + '%';
+      }
+    });
 
-  const words = text.split(/\s+/).length;
-  const durationMs = (words / 2.5) * 1000;
-  const fill = byId('narrate-bar-fill');
-  fill.style.transition = 'none';
-  fill.style.width = '0%';
-  requestAnimationFrame(() => {
-    fill.style.transition = `width ${durationMs}ms linear`;
-    fill.style.width = '100%';
+    audio.addEventListener('ended', () => {
+      resolve('ended');
+    });
+
+    audio.addEventListener('error', () => {
+      reject(new Error('Audio load failed'));
+    });
+
+    audio.play().catch(reject);
   });
+};
 
-  utterance.onend = () => {
-    if (narration.paused) return; // Don't fire onend when we cancel for pause
-    if (onEnd) onEnd();
-  };
-  utterance.onerror = (e) => {
-    if (e.error === 'canceled') return; // Expected when we cancel for pause
-    stopNarration();
-  };
+// Fallback: browser TTS (for slides missing pre-generated audio)
+const speakTextFallback = (text) => {
+  return new Promise((resolve) => {
+    const lang = byId('narrate-lang').value;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang === 'hi' ? 'hi-IN' : 'en-IN';
+    utterance.rate = 0.92;
+    narration.speaking = true;
+    narration.paused = false;
 
-  window.speechSynthesis.speak(utterance);
+    byId('narrate-btn').innerHTML = '<i class="fas fa-pause"></i>';
+    byId('narrate-stop-btn').style.display = '';
+    byId('narrate-progress').style.display = '';
+
+    const words = text.split(/\s+/).length;
+    const durationMs = (words / 2.5) * 1000;
+    const fill = byId('narrate-bar-fill');
+    fill.style.transition = 'none';
+    fill.style.width = '0%';
+    requestAnimationFrame(() => {
+      fill.style.transition = `width ${durationMs}ms linear`;
+      fill.style.width = '100%';
+    });
+
+    utterance.onend = () => { if (!narration.paused) resolve('ended'); };
+    utterance.onerror = () => { resolve('error'); };
+    window.speechSynthesis.speak(utterance);
+  });
 };
 
 const startNarration = async () => {
-  if (!('speechSynthesis' in window)) {
-    showToast('Narration not supported in this browser', 'error');
-    return;
-  }
-
-  window.speechSynthesis.cancel();
-  narration.paused = false;
+  stopNarration();
 
   const slides = getCurrentSlides();
   const slide = slides[state.currentSlide];
   if (!slide) return;
 
-  let text = getSlideNarrationText(slide);
+  const text = getSlideNarrationText(slide);
   if (!text) { showToast('No content to narrate', 'error'); return; }
 
   const lang = byId('narrate-lang').value;
-
-  if (lang === 'hi') {
-    byId('narrate-btn').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    byId('narrate-btn').disabled = true;
-    text = await translateToHinglish(text);
-    byId('narrate-btn').disabled = false;
-  }
+  const key = `${state.currentLessonId}-${state.currentSlide}`;
+  const suffix = lang === 'hi' ? 'hi' : 'en';
+  const audioUrl = `${AUDIO_BASE}/${key}-${suffix}.mp3`;
 
   narration.autoAdvance = true;
-  speakText(text, () => {
-    stopNarration();
-    if (narration.autoAdvance) {
-      const nextIdx = state.currentSlide + 1;
-      if (nextIdx < slides.length) {
-        renderSlide(nextIdx, slides);
-        setTimeout(startNarration, 400);
+
+  try {
+    await playAudio(audioUrl);
+  } catch {
+    // Fallback to browser TTS
+    if (lang === 'hi') {
+      byId('narrate-btn').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      const token = localStorage.getItem('lms_token') || '';
+      try {
+        const res = await fetch('/api/hinglish', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
+          body: JSON.stringify({ lessonId: state.currentLessonId, slideIndex: state.currentSlide, text })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          await speakTextFallback(data.translation || text);
+        } else {
+          await speakTextFallback(text);
+        }
+      } catch {
+        await speakTextFallback(text);
       }
+    } else {
+      await speakTextFallback(text);
     }
-  });
+  }
+
+  // Auto-advance
+  stopNarration();
+  if (narration.autoAdvance) {
+    const nextIdx = state.currentSlide + 1;
+    if (nextIdx < slides.length) {
+      renderSlide(nextIdx, slides);
+      setTimeout(startNarration, 400);
+    }
+  }
 };
 
 const toggleNarration = () => {
   if (narration.paused) {
-    // Resume: re-speak the text (Chrome doesn't support resume reliably)
+    // Resume
     narration.paused = false;
-    speakText(narration.currentText, () => {
-      stopNarration();
-      const slides = getCurrentSlides();
-      const nextIdx = state.currentSlide + 1;
-      if (nextIdx < slides.length) {
-        renderSlide(nextIdx, slides);
-        setTimeout(startNarration, 400);
-      }
-    });
+    if (narration.audio) {
+      narration.audio.play();
+      narration.speaking = true;
+      byId('narrate-btn').innerHTML = '<i class="fas fa-pause"></i>';
+    } else {
+      startNarration();
+    }
   } else if (narration.speaking) {
-    // Pause: cancel speech but remember we're paused
+    // Pause
     narration.paused = true;
     narration.autoAdvance = false;
-    window.speechSynthesis.cancel();
     narration.speaking = false;
+    if (narration.audio) {
+      narration.audio.pause();
+    } else {
+      window.speechSynthesis.cancel();
+    }
     byId('narrate-btn').innerHTML = '<i class="fas fa-play"></i>';
     const fill = byId('narrate-bar-fill');
-    fill.style.transition = 'none'; // freeze progress bar
+    fill.style.transition = 'none';
   } else {
     startNarration();
   }
