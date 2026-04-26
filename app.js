@@ -615,11 +615,11 @@ const getCurrentSlides = () => {
 // ===============================================
 const narration = {
   speaking: false,
-  utterance: null
+  utterance: null,
+  hinglishCache: {} // cache translations by slide index + lesson
 };
 
 const getSlideNarrationText = (slide) => {
-  // Extract plain text from slide HTML
   const tmp = document.createElement('div');
   let text = '';
   if (slide.title) text += slide.title + '. ';
@@ -628,6 +628,38 @@ const getSlideNarrationText = (slide) => {
     text += tmp.textContent + ' ';
   }
   return text.trim();
+};
+
+const translateToHinglish = async (text) => {
+  const cacheKey = `${state.currentLessonId}-${state.currentSlide}`;
+  if (narration.hinglishCache[cacheKey]) return narration.hinglishCache[cacheKey];
+
+  try {
+    const token = localStorage.getItem('lms_token') || '';
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
+      body: JSON.stringify({
+        prompt: `Convert this educational text to Hinglish (Hindi written in Roman script mixed with English). Rules:
+- Keep ALL technical/tech keywords in English (AI, prompt, machine learning, API, chatbot, LLM, data, code, etc.)
+- Use simple Hindi (Roman script) for everything else so a 4th grader can follow
+- Keep it conversational and fun, like a cool teacher explaining to kids
+- Do NOT add any extra content, just convert what's given
+- Output ONLY the converted text, nothing else
+
+Text to convert:
+${text}`
+      })
+    });
+    if (!res.ok) throw new Error('Translation failed');
+    const data = await res.json();
+    const translated = data.response || text;
+    narration.hinglishCache[cacheKey] = translated;
+    return translated;
+  } catch (err) {
+    showToast('Hinglish translation failed, using English', 'error');
+    return text;
+  }
 };
 
 const stopNarration = () => {
@@ -640,29 +672,37 @@ const stopNarration = () => {
   byId('narrate-progress').style.display = 'none';
 };
 
-const startNarration = () => {
+const startNarration = async () => {
   if (!('speechSynthesis' in window)) {
     showToast('Narration not supported in this browser', 'error');
     return;
   }
 
-  // Stop any ongoing narration
   stopNarration();
 
   const slides = getCurrentSlides();
   const slide = slides[state.currentSlide];
   if (!slide) return;
 
-  const text = getSlideNarrationText(slide);
+  let text = getSlideNarrationText(slide);
   if (!text) { showToast('No content to narrate', 'error'); return; }
 
   const lang = byId('narrate-lang').value;
+
+  if (lang === 'hi') {
+    // Show loading state
+    byId('narrate-btn').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    byId('narrate-btn').disabled = true;
+    text = await translateToHinglish(text);
+    byId('narrate-btn').disabled = false;
+  }
+
   const utterance = new SpeechSynthesisUtterance(text);
+  // Use hi-IN voice for Hinglish (handles Hindi words better) and en-IN for English
   utterance.lang = lang === 'hi' ? 'hi-IN' : 'en-IN';
-  utterance.rate = 0.95;
+  utterance.rate = 0.92;
   utterance.pitch = 1;
 
-  // Try to find a good voice
   const voices = window.speechSynthesis.getVoices();
   const langPrefix = lang === 'hi' ? 'hi' : 'en';
   const preferred = voices.find(v => v.lang.startsWith(langPrefix) && v.name.toLowerCase().includes('google'))
@@ -673,14 +713,12 @@ const startNarration = () => {
   narration.utterance = utterance;
   narration.speaking = true;
 
-  // UI updates
   byId('narrate-btn').innerHTML = '<i class="fas fa-pause"></i>';
   byId('narrate-stop-btn').style.display = '';
   byId('narrate-progress').style.display = '';
 
-  // Approximate progress bar
   const words = text.split(/\s+/).length;
-  const durationMs = (words / 2.5) * 1000; // ~150 wpm
+  const durationMs = (words / 2.5) * 1000;
   const fill = byId('narrate-bar-fill');
   fill.style.transition = `width ${durationMs}ms linear`;
   fill.style.width = '0%';
@@ -688,7 +726,6 @@ const startNarration = () => {
 
   utterance.onend = () => {
     stopNarration();
-    // Auto-advance to next slide
     const nextIdx = state.currentSlide + 1;
     if (nextIdx < slides.length) {
       renderSlide(nextIdx, slides);
