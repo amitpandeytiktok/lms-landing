@@ -572,6 +572,7 @@ const renderLesson = (lessonId) => {
 // --------------- SLIDES ---------------
 const renderSlide = (index, slides) => {
   if (!slides || slides.length === 0) return;
+  stopNarration();
   const slide = slides[index];
   state.currentSlide = index;
 
@@ -607,6 +608,111 @@ const getCurrentSlides = () => {
   if (!week) return [];
   const lesson = findLessonInWeek(week, state.currentLessonId);
   return lesson?.slides || [];
+};
+
+// ===============================================
+//  NARRATION (Web Speech API)
+// ===============================================
+const narration = {
+  speaking: false,
+  utterance: null
+};
+
+const getSlideNarrationText = (slide) => {
+  // Extract plain text from slide HTML
+  const tmp = document.createElement('div');
+  let text = '';
+  if (slide.title) text += slide.title + '. ';
+  if (slide.content) {
+    tmp.innerHTML = slide.content;
+    text += tmp.textContent + ' ';
+  }
+  return text.trim();
+};
+
+const stopNarration = () => {
+  window.speechSynthesis.cancel();
+  narration.speaking = false;
+  narration.utterance = null;
+  byId('narrate-btn').style.display = '';
+  byId('narrate-btn').innerHTML = '<i class="fas fa-play"></i>';
+  byId('narrate-stop-btn').style.display = 'none';
+  byId('narrate-progress').style.display = 'none';
+};
+
+const startNarration = () => {
+  if (!('speechSynthesis' in window)) {
+    showToast('Narration not supported in this browser', 'error');
+    return;
+  }
+
+  // Stop any ongoing narration
+  stopNarration();
+
+  const slides = getCurrentSlides();
+  const slide = slides[state.currentSlide];
+  if (!slide) return;
+
+  const text = getSlideNarrationText(slide);
+  if (!text) { showToast('No content to narrate', 'error'); return; }
+
+  const lang = byId('narrate-lang').value;
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = lang === 'hi' ? 'hi-IN' : 'en-IN';
+  utterance.rate = 0.95;
+  utterance.pitch = 1;
+
+  // Try to find a good voice
+  const voices = window.speechSynthesis.getVoices();
+  const langPrefix = lang === 'hi' ? 'hi' : 'en';
+  const preferred = voices.find(v => v.lang.startsWith(langPrefix) && v.name.toLowerCase().includes('google'))
+    || voices.find(v => v.lang.startsWith(langPrefix))
+    || voices[0];
+  if (preferred) utterance.voice = preferred;
+
+  narration.utterance = utterance;
+  narration.speaking = true;
+
+  // UI updates
+  byId('narrate-btn').innerHTML = '<i class="fas fa-pause"></i>';
+  byId('narrate-stop-btn').style.display = '';
+  byId('narrate-progress').style.display = '';
+
+  // Approximate progress bar
+  const words = text.split(/\s+/).length;
+  const durationMs = (words / 2.5) * 1000; // ~150 wpm
+  const fill = byId('narrate-bar-fill');
+  fill.style.transition = `width ${durationMs}ms linear`;
+  fill.style.width = '0%';
+  requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.width = '100%'; }));
+
+  utterance.onend = () => {
+    stopNarration();
+    // Auto-advance to next slide
+    const nextIdx = state.currentSlide + 1;
+    if (nextIdx < slides.length) {
+      renderSlide(nextIdx, slides);
+      setTimeout(startNarration, 400);
+    }
+  };
+
+  utterance.onerror = () => stopNarration();
+
+  window.speechSynthesis.speak(utterance);
+};
+
+const toggleNarration = () => {
+  if (narration.speaking) {
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+      byId('narrate-btn').innerHTML = '<i class="fas fa-pause"></i>';
+    } else {
+      window.speechSynthesis.pause();
+      byId('narrate-btn').innerHTML = '<i class="fas fa-play"></i>';
+    }
+  } else {
+    startNarration();
+  }
 };
 
 // --------------- TABS ---------------
@@ -826,6 +932,15 @@ const setupEventListeners = () => {
     const dot = e.target.closest('.slide-dot');
     if (dot) renderSlide(parseInt(dot.dataset.slide, 10), getCurrentSlides());
   });
+
+  // --- Narration ---
+  byId('narrate-btn').addEventListener('click', toggleNarration);
+  byId('narrate-stop-btn').addEventListener('click', stopNarration);
+  // Load voices (some browsers load async)
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+  }
 
   // --- Tabs ---
   $('.lesson-tabs').addEventListener('click', (e) => {

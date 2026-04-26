@@ -235,6 +235,17 @@
             <div class="slide-dots" id="slide-dots"></div>
             <button id="slide-next" class="slide-nav-btn">Next <i class="fas fa-chevron-right"></i></button>
           </div>
+          <div class="narration-controls" id="narration-controls">
+            <button id="narrate-btn" class="narrate-btn" title="Play narration"><i class="fas fa-play"></i></button>
+            <button id="narrate-stop-btn" class="narrate-btn narrate-stop" title="Stop narration" style="display:none"><i class="fas fa-stop"></i></button>
+            <div class="narrate-progress" id="narrate-progress" style="display:none">
+              <div class="narrate-bar"><div class="narrate-bar-fill" id="narrate-bar-fill"></div></div>
+            </div>
+            <select id="narrate-lang" class="narrate-lang" title="Narration language">
+              <option value="en">🇬🇧 English</option>
+              <option value="hi">🇮🇳 Hindi</option>
+            </select>
+          </div>
         </div>
 
         <!-- Tabs -->
