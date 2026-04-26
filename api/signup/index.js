@@ -34,7 +34,7 @@ module.exports = async function (context, req) {
 
   try {
     // Check if user already exists
-    const existing = await tableRequest('GET', `/Users(PartitionKey='user',RowKey='${encodeURIComponent(email)}')`);
+    const existing = await tableRequest('GET', `/users(PartitionKey='user',RowKey='${encodeURIComponent(email)}')`);
     if (existing.status === 200) {
       context.res = { status: 409, headers: HEADERS, body: { error: 'An account with this email already exists.' } };
       return;
@@ -57,7 +57,7 @@ module.exports = async function (context, req) {
       token
     };
 
-    const result = await tableRequest('POST', '/Users', entity);
+    const result = await tableRequest('POST', '/users', entity);
     if (result.status >= 400) {
       context.res = { status: 500, headers: HEADERS, body: { error: 'Failed to create account. Please try again.' } };
       return;

@@ -24,7 +24,7 @@ module.exports = async function (context, req) {
   try {
     // Query Table Storage for user with matching token
     const filter = encodeURIComponent(`PartitionKey eq 'user' and token eq '${token}'`);
-    const result = await tableRequest('GET', `/Users()?$filter=${filter}`);
+    const result = await tableRequest('GET', `/users()?$filter=${filter}`);
 
     if (!result.body || !result.body.value || result.body.value.length === 0) {
       context.res = { status: 401, headers: HEADERS, body: { error: 'Invalid or expired token.' } };

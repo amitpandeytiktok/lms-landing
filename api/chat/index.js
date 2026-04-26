@@ -16,7 +16,7 @@ module.exports = async function (context, req) {
   }
   try {
     const filter = encodeURIComponent(`PartitionKey eq 'user' and token eq '${token}'`);
-    const authResult = await tableRequest('GET', `/Users()?$filter=${filter}`);
+    const authResult = await tableRequest('GET', `/users()?$filter=${filter}`);
     if (!authResult.body || !authResult.body.value || authResult.body.value.length === 0) {
       context.res = { status: 401, headers: { 'Content-Type': 'application/json' }, body: { error: 'Invalid or expired token.' } };
       return;

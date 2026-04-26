@@ -23,7 +23,7 @@ module.exports = async function (context, req) {
 
   try {
     // Look up user
-    const result = await tableRequest('GET', `/Users(PartitionKey='user',RowKey='${encodeURIComponent(email)}')`);
+    const result = await tableRequest('GET', `/users(PartitionKey='user',RowKey='${encodeURIComponent(email)}')`);
     if (result.status === 404 || !result.body) {
       context.res = { status: 401, headers: HEADERS, body: { error: 'Invalid email or password.' } };
       return;
@@ -51,7 +51,7 @@ module.exports = async function (context, req) {
       token
     };
 
-    await tableRequest('PUT', `/Users(PartitionKey='user',RowKey='${encodeURIComponent(email)}')`, updateEntity);
+    await tableRequest('PUT', `/users(PartitionKey='user',RowKey='${encodeURIComponent(email)}')`, updateEntity);
 
     context.res = {
       status: 200,

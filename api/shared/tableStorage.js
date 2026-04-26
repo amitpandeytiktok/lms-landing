@@ -43,6 +43,7 @@ function tableRequest(method, tablePath, body) {
     const headers = getAuthHeaders(AccountName, AccountKey, method, tablePath, bodyStr.length, contentType, date);
 
     if (body) headers['Content-Length'] = Buffer.byteLength(bodyStr);
+    if (method === 'PUT' || method === 'MERGE') headers['If-Match'] = '*';
 
     const options = {
       hostname: `${AccountName}.table.core.windows.net`,
@@ -54,7 +55,13 @@ function tableRequest(method, tablePath, body) {
     const req = https.request(options, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
-      res.on('end', () => resolve({ status: res.statusCode, body: data ? JSON.parse(data) : null }));
+      res.on('end', () => {
+        let parsed = null;
+        if (data) {
+          try { parsed = JSON.parse(data); } catch (e) { parsed = null; }
+        }
+        resolve({ status: res.statusCode, body: parsed });
+      });
     });
     req.on('error', reject);
     if (bodyStr) req.write(bodyStr);
