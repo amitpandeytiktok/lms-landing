@@ -22,16 +22,23 @@ module.exports = async function (context, req) {
   }
 
   try {
-    // Query Table Storage for user with matching token
-    const filter = encodeURIComponent(`PartitionKey eq 'user' and token eq '${token}'`);
-    const result = await tableRequest('GET', `/users()?$filter=${filter}`);
+    // Query all users and filter in code (OData filter on custom properties can be tricky)
+    const result = await tableRequest('GET', '/users()');
 
-    if (!result.body || !result.body.value || result.body.value.length === 0) {
-      context.res = { status: 401, headers: HEADERS, body: { error: 'Invalid or expired token.' } };
+    context.log('Table query result status:', result.status);
+    context.log('Table query body:', JSON.stringify(result.body));
+
+    if (!result.body || !result.body.value) {
+      context.res = { status: 401, headers: HEADERS, body: { error: 'Invalid or expired token.', debug: { status: result.status, hasBody: !!result.body } } };
       return;
     }
 
-    const user = result.body.value[0];
+    const user = result.body.value.find(u => u.token === token);
+    if (!user) {
+      context.res = { status: 401, headers: HEADERS, body: { error: 'Invalid or expired token.', debug: { totalUsers: result.body.value.length, tokenSearched: token.substring(0, 8) + '...' } } };
+      return;
+    }
+
     context.res = {
       status: 200,
       headers: HEADERS,
@@ -39,6 +46,6 @@ module.exports = async function (context, req) {
     };
   } catch (err) {
     context.log.error('Auth check error:', err.message);
-    context.res = { status: 500, headers: HEADERS, body: { error: 'Internal server error.' } };
+    context.res = { status: 500, headers: HEADERS, body: { error: 'Internal server error.', debug: err.message } };
   }
 };
