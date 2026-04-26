@@ -7,9 +7,8 @@ const DEPLOYMENT = 'gpt-4o-mini';
 const API_VERSION = '2024-06-01';
 
 module.exports = async function (context, req) {
-  // Token validation
-  const authHeader = req.headers['authorization'] || '';
-  const token = authHeader.replace('Bearer ', '').trim();
+  // Token validation (use X-Auth-Token since SWA intercepts Authorization header)
+  const token = req.headers['x-auth-token'] || '';
   if (!token) {
     context.res = { status: 401, headers: { 'Content-Type': 'application/json' }, body: { error: 'Authentication required.' } };
     return;

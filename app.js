@@ -113,7 +113,7 @@ const checkAuth = async () => {
   if (token && savedUser) {
     try {
       const res = await fetch('/api/me', {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 'X-Auth-Token': token }
       });
       if (res.ok) {
         const data = await res.json();
@@ -717,7 +717,7 @@ const setupEventListeners = () => {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('lms_token') || ''}`
+          'X-Auth-Token': localStorage.getItem('lms_token') || ''
         },
         body: JSON.stringify({ prompt, task })
       });
