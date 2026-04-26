@@ -15,6 +15,18 @@
     {
       "route": "/api/chat",
       "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/admin/grant-access",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/admin/revoke-access",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/admin/users",
+      "allowedRoles": ["anonymous"]
     }
   ],
   "navigationFallback": {

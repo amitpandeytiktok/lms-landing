@@ -9,7 +9,8 @@ const state = {
   currentLessonId: null,
   currentSlide: 0,
   currentTab: 'overview',
-  progress: {}
+  progress: {},
+  currentUser: null
 };
 
 // --------------- AUTH ---------------
@@ -141,6 +142,10 @@ const logout = () => {
   document.body.classList.remove('app-mode');
   byId('dashboard-view').style.display = 'none';
   byId('course-view').style.display = 'none';
+  byId('course-detail-view').style.display = 'none';
+  byId('buy-view').style.display = 'none';
+  byId('admin-view').style.display = 'none';
+  state.currentUser = null;
   const landing = byId('landing-view');
   if (landing) landing.style.display = '';
   // Restore nav
@@ -156,6 +161,7 @@ const logout = () => {
 };
 
 const showAppView = (user) => {
+  state.currentUser = user;
   document.body.classList.add('app-mode');
   const landing = byId('landing-view');
   if (landing) landing.style.display = 'none';
@@ -175,6 +181,15 @@ const showAppView = (user) => {
     </div>
     <button class="logout-btn" onclick="logout()">Sign Out</button>
   `;
+
+  // Show admin button if admin user
+  if (user.email === 'officialtechwaveteam@gmail.com') {
+    const adminBtn = document.createElement('button');
+    adminBtn.className = 'admin-nav-btn';
+    adminBtn.innerHTML = '<i class="fas fa-cog"></i> Admin';
+    adminBtn.onclick = navigateToAdmin;
+    section.appendChild(adminBtn);
+  }
 };
 
 const showLandingView = () => {
@@ -310,6 +325,7 @@ const renderDashboard = () => {
     <div class="course-card" data-course="ai-beginner">
       <div class="card-image" style="background:linear-gradient(135deg, #1a0533 0%, #2d1560 30%, #6c3ce0 65%, #a855f7 100%)">
         <span class="card-emoji">🤖</span>
+        <span class="price-badge">₹500</span>
       </div>
       <div class="card-info">
         <div class="card-week-title">AI Beginner Course</div>
@@ -323,6 +339,7 @@ const renderDashboard = () => {
           <span><i class="fas fa-tasks"></i> ${getCourseTotalTasks()} tasks</span>
           <span><i class="fas fa-calendar-week"></i> ${COURSE_DATA.weeks.length} weeks</span>
         </div>
+        <button class="buy-btn" onclick="event.stopPropagation(); navigateToBuyPage()"><i class="fas fa-shopping-cart"></i> Buy Now</button>
       </div>
     </div>`;
 };
@@ -356,11 +373,23 @@ const renderCourseDetail = () => {
   }).join('');
 };
 
+const hideAllViews = () => {
+  ['dashboard-view', 'course-detail-view', 'course-view', 'buy-view', 'admin-view'].forEach(id => {
+    const el = byId(id);
+    if (el) el.style.display = 'none';
+  });
+};
+
 const navigateToCourseDetail = () => {
+  // Check if user has access
+  const access = (state.currentUser && state.currentUser.courseAccess) || '';
+  if (!access.split(',').map(s => s.trim()).includes('ai-beginner')) {
+    navigateToBuyPage();
+    return;
+  }
   state.currentView = 'course-detail';
-  byId('dashboard-view').style.display = 'none';
+  hideAllViews();
   byId('course-detail-view').style.display = 'block';
-  byId('course-view').style.display = 'none';
   renderCourseDetail();
 };
 
@@ -372,8 +401,7 @@ const navigateToCourse = (weekId) => {
   if (!week) return;
   state.currentView = 'course';
   state.currentWeekId = weekId;
-  byId('dashboard-view').style.display = 'none';
-  byId('course-detail-view').style.display = 'none';
+  hideAllViews();
   byId('course-view').style.display = 'block';
   renderSidebar(week);
   const firstLesson = getFirstIncompleteLesson(week);
@@ -384,10 +412,97 @@ const navigateToDashboard = () => {
   state.currentView = 'dashboard';
   state.currentWeekId = null;
   state.currentLessonId = null;
-  byId('course-view').style.display = 'none';
-  byId('course-detail-view').style.display = 'none';
+  hideAllViews();
   byId('dashboard-view').style.display = 'block';
   renderDashboard();
+};
+
+const navigateToBuyPage = () => {
+  state.currentView = 'buy';
+  hideAllViews();
+  byId('buy-view').style.display = 'block';
+};
+
+const navigateToAdmin = () => {
+  state.currentView = 'admin';
+  hideAllViews();
+  byId('admin-view').style.display = 'block';
+  renderAdminView();
+};
+
+const renderAdminView = async () => {
+  const container = byId('admin-users-list');
+  container.innerHTML = '<p style="text-align:center;padding:20px;">Loading users...</p>';
+  try {
+    const token = localStorage.getItem('lms_token');
+    const res = await fetch('/api/admin/users', {
+      headers: { 'X-Auth-Token': token }
+    });
+    if (!res.ok) throw new Error('Failed to fetch users');
+    const data = await res.json();
+    const users = data.users || [];
+    if (users.length === 0) {
+      container.innerHTML = '<p style="text-align:center;padding:20px;">No users found.</p>';
+      return;
+    }
+    let html = `<table class="admin-user-table">
+      <thead><tr><th>Name</th><th>Email</th><th>Course Access</th><th>Actions</th></tr></thead><tbody>`;
+    users.forEach(u => {
+      const hasAccess = u.courseAccess && u.courseAccess.split(',').map(s => s.trim()).includes('ai-beginner');
+      html += `<tr>
+        <td>${u.name || '—'}</td>
+        <td>${u.email}</td>
+        <td>${hasAccess ? '<span class="access-yes">✅ ai-beginner</span>' : '<span class="access-no">❌ No access</span>'}</td>
+        <td>${hasAccess
+          ? `<button class="revoke-btn" onclick="adminRevokeAccess('${u.email}')">Revoke</button>`
+          : `<button class="grant-btn" onclick="adminGrantAccessFor('${u.email}')">Grant</button>`
+        }</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  } catch (err) {
+    container.innerHTML = '<p style="color:red;text-align:center;padding:20px;">Error loading users.</p>';
+  }
+};
+
+const adminGrantAccess = async () => {
+  const email = byId('admin-email-input').value.trim();
+  if (!email) { showToast('Please enter an email', 'error'); return; }
+  await adminGrantAccessFor(email);
+  byId('admin-email-input').value = '';
+};
+
+const adminGrantAccessFor = async (email) => {
+  try {
+    const token = localStorage.getItem('lms_token');
+    const res = await fetch('/api/admin/grant-access', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
+      body: JSON.stringify({ email, courseId: 'ai-beginner' })
+    });
+    if (!res.ok) throw new Error('Failed');
+    showToast(`Access granted to ${email}`, 'success');
+    renderAdminView();
+  } catch (err) {
+    showToast('Failed to grant access', 'error');
+  }
+};
+
+const adminRevokeAccess = async (email) => {
+  try {
+    const token = localStorage.getItem('lms_token');
+    const res = await fetch('/api/admin/revoke-access', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
+      body: JSON.stringify({ email, courseId: 'ai-beginner' })
+    });
+    if (!res.ok) throw new Error('Failed');
+    showToast(`Access revoked for ${email}`, 'success');
+    renderAdminView();
+  } catch (err) {
+    showToast('Failed to revoke access', 'error');
+  }
 };
 
 // --------------- SIDEBAR ---------------
@@ -659,7 +774,7 @@ const setupEventListeners = () => {
   // --- Dashboard: Course card click → course detail ---
   byId('courses-grid').addEventListener('click', (e) => {
     const card = e.target.closest('.course-card');
-    if (card) navigateToCourseDetail();
+    if (card && !e.target.closest('.buy-btn')) navigateToCourseDetail();
   });
 
   // --- Course Detail: Week card click → lesson view ---

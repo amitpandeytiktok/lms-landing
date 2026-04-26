@@ -82,6 +82,11 @@
           <h3>Track Your Progress</h3>
           <p>Visual dashboards show your journey. Complete exercises, earn badges, and see yourself grow from beginner to expert.</p>
         </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">🎓</div>
+          <h3>Earn a Certificate</h3>
+          <p>Receive a certificate of completion from Techwave Global AI Academy upon successfully finishing the course.</p>
+        </div>
       </div>
     </section>
 
@@ -133,7 +138,7 @@
       </div>
       <div class="cta-content">
         <h2>Ready to Start Your <span class="gradient-text">AI Journey</span>?</h2>
-        <p>Create an account and begin learning at your own pace.</p>
+        <p>Create an account, enroll in the course, and earn your certificate.</p>
         <button class="cta-primary cta-large" onclick="showAuthModal('signup')"><i class="fas fa-rocket"></i> Create Account</button>
       </div>
     </section>
@@ -172,6 +177,37 @@
         <h2 id="course-detail-title">AI Beginner Course</h2>
       </div>
       <div id="weeks-grid" class="courses-grid"></div>
+    </div>
+  </div>
+
+  <!-- ==================== BUY VIEW ==================== -->
+  <div id="buy-view" style="display:none">
+    <button class="back-btn" onclick="navigateToDashboard()"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
+    <div class="buy-container card">
+      <h2 class="buy-title">🚀 AI Beginner Course</h2>
+      <p class="buy-subtitle">Everything you need to master AI from scratch</p>
+      <div class="buy-features">
+        <div class="buy-feature"><i class="fas fa-book-open"></i> 51 Hands-on Lessons</div>
+        <div class="buy-feature"><i class="fas fa-calendar-week"></i> 4 Weekly Tracks</div>
+        <div class="buy-feature"><i class="fas fa-tasks"></i> 51 Practical Exercises</div>
+        <div class="buy-feature"><i class="fas fa-robot"></i> AI Playground Access</div>
+        <div class="buy-feature"><i class="fas fa-certificate"></i> Certificate of Completion</div>
+      </div>
+      <div class="buy-price">₹500</div>
+      <div class="buy-qr-section">
+        <h3>Pay via UPI</h3>
+        <img src="upi-qr.jpg" alt="UPI QR Code" class="qr-code-img">
+        <p class="upi-id">UPI ID: <strong>amitansu1995@icici</strong></p>
+      </div>
+      <div class="payment-instructions">
+        <h3>How to get access:</h3>
+        <ol>
+          <li>Scan the QR code with any UPI app (GPay, PhonePe, Paytm, etc.)</li>
+          <li>Pay <strong>₹500</strong></li>
+          <li>Send payment screenshot to <strong>officialtechwaveteam@gmail.com</strong></li>
+          <li>You'll get access within 24 hours</li>
+        </ol>
+      </div>
     </div>
   </div>
 
@@ -236,6 +272,19 @@
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- ==================== ADMIN VIEW ==================== -->
+  <div id="admin-view" style="display:none">
+    <button class="back-btn" onclick="navigateToDashboard()"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
+    <div class="admin-container card">
+      <h2 class="admin-title">🔧 Admin Panel</h2>
+      <div class="admin-form">
+        <input type="email" id="admin-email-input" placeholder="User email" class="admin-input">
+        <button class="grant-btn" onclick="adminGrantAccess()">Grant Access</button>
+      </div>
+      <div id="admin-users-list"></div>
     </div>
   </div>
 

@@ -37,7 +37,7 @@ module.exports = async function (context, req) {
     context.res = {
       status: 200,
       headers: HEADERS,
-      body: { user: { name: user.name, email: user.RowKey } }
+      body: { user: { name: user.name, email: user.RowKey, courseAccess: user.courseAccess || '' } }
     };
   } catch (err) {
     context.log.error('Auth check error:', err.message);

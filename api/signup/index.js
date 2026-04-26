@@ -54,7 +54,8 @@ module.exports = async function (context, req) {
       name,
       salt,
       passwordHash: hash,
-      token
+      token,
+      courseAccess: ''
     };
 
     const result = await tableRequest('POST', '/users', entity);
@@ -67,7 +68,7 @@ module.exports = async function (context, req) {
     context.res = {
       status: 200,
       headers: HEADERS,
-      body: { token, user: { name, email } }
+      body: { token, user: { name, email, courseAccess: '' } }
     };
   } catch (err) {
     context.log.error('Signup error:', err.message, err.stack);

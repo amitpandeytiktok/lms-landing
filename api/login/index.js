@@ -48,7 +48,8 @@ module.exports = async function (context, req) {
       name: user.name,
       salt: user.salt,
       passwordHash: user.passwordHash,
-      token
+      token,
+      courseAccess: user.courseAccess || ''
     };
 
     await tableRequest('PUT', `/users(PartitionKey='user',RowKey='${encodeURIComponent(email)}')`, updateEntity);
@@ -56,7 +57,7 @@ module.exports = async function (context, req) {
     context.res = {
       status: 200,
       headers: HEADERS,
-      body: { token, user: { name: user.name, email } }
+      body: { token, user: { name: user.name, email, courseAccess: user.courseAccess || '' } }
     };
   } catch (err) {
     context.log.error('Login error:', err.message);
