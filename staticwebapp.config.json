@@ -1,43 +1,24 @@
 {
   "routes": [
     {
-      "route": "/api/*",
-      "allowedRoles": ["authenticated"]
+      "route": "/api/signup",
+      "allowedRoles": ["anonymous"]
     },
     {
-      "route": "/login",
-      "rewrite": "/.auth/login/google"
+      "route": "/api/login",
+      "allowedRoles": ["anonymous"]
     },
     {
-      "route": "/logout",
-      "redirect": "/.auth/logout"
+      "route": "/api/me",
+      "allowedRoles": ["anonymous"]
     },
     {
-      "route": "/.auth/login/github",
-      "statusCode": 404
-    },
-    {
-      "route": "/.auth/login/twitter",
-      "statusCode": 404
+      "route": "/api/chat",
+      "allowedRoles": ["anonymous"]
     }
   ],
   "navigationFallback": {
     "rewrite": "/index.html"
-  },
-  "responseOverrides": {
-    "401": {
-      "redirect": "/.auth/login/google?post_login_redirect_uri=/"
-    }
-  },
-  "auth": {
-    "identityProviders": {
-      "google": {
-        "registration": {
-          "clientIdSettingName": "GOOGLE_CLIENT_ID",
-          "clientSecretSettingName": "GOOGLE_CLIENT_SECRET"
-        }
-      }
-    }
   },
   "globalHeaders": {
     "X-Content-Type-Options": "nosniff",

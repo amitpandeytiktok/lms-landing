@@ -14,20 +14,146 @@ const state = {
 };
 
 // --------------- AUTH ---------------
-const checkAuth = async () => {
+let authMode = 'login'; // 'login' or 'signup'
+
+const showAuthModal = (mode) => {
+  authMode = mode || 'login';
+  const modal = byId('auth-modal');
+  modal.style.display = 'flex';
+  updateAuthModalUI();
+  // Focus first visible input
+  setTimeout(() => {
+    if (authMode === 'signup') byId('auth-name').focus();
+    else byId('auth-email').focus();
+  }, 100);
+};
+
+const hideAuthModal = () => {
+  byId('auth-modal').style.display = 'none';
+  byId('auth-error').style.display = 'none';
+  byId('auth-form').reset();
+};
+
+const toggleAuthMode = () => {
+  authMode = authMode === 'login' ? 'signup' : 'login';
+  updateAuthModalUI();
+};
+
+const updateAuthModalUI = () => {
+  const isLogin = authMode === 'login';
+  byId('auth-modal-title').textContent = isLogin ? 'Welcome Back' : 'Create Account';
+  byId('auth-modal-subtitle').textContent = isLogin ? 'Sign in to continue your AI journey' : 'Join thousands learning AI today';
+  byId('name-field').style.display = isLogin ? 'none' : 'block';
+  byId('auth-submit-text').textContent = isLogin ? 'Sign In' : 'Create Account';
+  byId('auth-switch-text').textContent = isLogin ? "Don't have an account?" : 'Already have an account?';
+  byId('auth-switch-btn').textContent = isLogin ? 'Sign Up' : 'Sign In';
+  byId('auth-error').style.display = 'none';
+  if (!isLogin) byId('auth-name').setAttribute('required', '');
+  else byId('auth-name').removeAttribute('required');
+};
+
+const showAuthError = (msg) => {
+  const el = byId('auth-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+};
+
+const handleAuth = async (e) => {
+  e.preventDefault();
+  const btn = byId('auth-submit-btn');
+  const spinner = byId('auth-spinner');
+  const text = byId('auth-submit-text');
+  
+  btn.disabled = true;
+  spinner.style.display = 'inline-block';
+  text.style.display = 'none';
+  byId('auth-error').style.display = 'none';
+  
+  const email = byId('auth-email').value.trim();
+  const password = byId('auth-password').value;
+  const name = byId('auth-name').value.trim();
+  
+  const endpoint = authMode === 'login' ? '/api/login' : '/api/signup';
+  const body = authMode === 'login' ? { email, password } : { name, email, password };
+  
   try {
-    const res = await fetch('/.auth/me');
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    
     const data = await res.json();
-    const user = data.clientPrincipal;
-    if (user) {
-      showAppView(user);
-      return user;
+    
+    if (!res.ok) {
+      showAuthError(data.error || 'Something went wrong. Please try again.');
+      return;
     }
-  } catch (e) {
-    // Not authenticated or running locally
+    
+    // Save session
+    localStorage.setItem('lms_token', data.token);
+    localStorage.setItem('lms_user', JSON.stringify(data.user));
+    
+    hideAuthModal();
+    showAppView(data.user);
+    showToast(`Welcome${authMode === 'signup' ? '' : ' back'}, ${data.user.name}! 🎉`, 'success');
+  } catch (err) {
+    showAuthError('Network error. Please check your connection.');
+  } finally {
+    btn.disabled = false;
+    spinner.style.display = 'none';
+    text.style.display = 'inline';
   }
+};
+
+const checkAuth = async () => {
+  const token = localStorage.getItem('lms_token');
+  const savedUser = localStorage.getItem('lms_user');
+  
+  if (token && savedUser) {
+    try {
+      const res = await fetch('/api/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        showAppView(data.user);
+        return data.user;
+      }
+    } catch (e) {
+      // API not available (local dev) — use saved user
+      if (savedUser) {
+        showAppView(JSON.parse(savedUser));
+        return JSON.parse(savedUser);
+      }
+    }
+    // Token invalid — clear it
+    localStorage.removeItem('lms_token');
+    localStorage.removeItem('lms_user');
+  }
+  
   showLandingView();
   return null;
+};
+
+const logout = () => {
+  localStorage.removeItem('lms_token');
+  localStorage.removeItem('lms_user');
+  document.body.classList.remove('app-mode');
+  byId('dashboard-view').style.display = 'none';
+  byId('course-view').style.display = 'none';
+  const landing = byId('landing-view');
+  if (landing) landing.style.display = '';
+  // Restore nav
+  const navLinks = byId('nav-links');
+  if (navLinks) navLinks.style.display = '';
+  const section = byId('auth-section');
+  section.innerHTML = `
+    <button class="login-btn" id="login-btn" onclick="showAuthModal('login')">
+      <i class="fas fa-sign-in-alt"></i> Sign In
+    </button>
+  `;
+  showToast('Signed out successfully', 'success');
 };
 
 const showAppView = (user) => {
@@ -40,32 +166,25 @@ const showAppView = (user) => {
   const navLinks = byId('nav-links');
   if (navLinks) navLinks.style.display = 'none';
   
-  // Update auth section
+  // Update auth section with user info
   const section = byId('auth-section');
-  const initials = (user.userDetails || 'U').substring(0, 2).toUpperCase();
+  const initials = (user.name || 'U').substring(0, 2).toUpperCase();
   section.innerHTML = `
     <div class="user-info">
       <div class="user-avatar">${initials}</div>
-      <span class="user-name">${user.userDetails || 'User'}</span>
+      <span class="user-name">${user.name || user.email}</span>
     </div>
-    <a href="/.auth/logout?post_logout_redirect_uri=/" class="logout-btn">Sign Out</a>
+    <button class="logout-btn" onclick="logout()">Sign Out</button>
   `;
-  
-  // Update brand for app mode
-  const brand = document.querySelector('.nav-brand span');
-  if (brand) brand.innerHTML = 'Techwave <span class="brand-highlight">AI Academy</span>';
 };
 
 const showLandingView = () => {
-  // Show landing, hide dashboard
   const landing = byId('landing-view');
   if (landing) landing.style.display = '';
   byId('dashboard-view').style.display = 'none';
   
-  // Setup scroll reveal
   setupScrollReveal();
   
-  // Scroll-based nav background
   window.addEventListener('scroll', () => {
     const nav = byId('main-nav');
     if (nav) nav.classList.toggle('scrolled', window.scrollY > 50);
@@ -596,7 +715,10 @@ const setupEventListeners = () => {
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('lms_token') || ''}`
+        },
         body: JSON.stringify({ prompt, task })
       });
       

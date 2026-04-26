@@ -1,4 +1,5 @@
 const https = require('https');
+const { tableRequest } = require('../shared/tableStorage');
 
 const AZURE_OPENAI_ENDPOINT = process.env.AZURE_OPENAI_ENDPOINT;
 const AZURE_OPENAI_KEY = process.env.AZURE_OPENAI_KEY;
@@ -6,6 +7,26 @@ const DEPLOYMENT = 'gpt-4o-mini';
 const API_VERSION = '2024-06-01';
 
 module.exports = async function (context, req) {
+  // Token validation
+  const authHeader = req.headers['authorization'] || '';
+  const token = authHeader.replace('Bearer ', '').trim();
+  if (!token) {
+    context.res = { status: 401, headers: { 'Content-Type': 'application/json' }, body: { error: 'Authentication required.' } };
+    return;
+  }
+  try {
+    const filter = encodeURIComponent(`PartitionKey eq 'user' and token eq '${token}'`);
+    const authResult = await tableRequest('GET', `/Users()?$filter=${filter}`);
+    if (!authResult.body || !authResult.body.value || authResult.body.value.length === 0) {
+      context.res = { status: 401, headers: { 'Content-Type': 'application/json' }, body: { error: 'Invalid or expired token.' } };
+      return;
+    }
+  } catch (err) {
+    context.log.error('Token validation error:', err.message);
+    context.res = { status: 401, headers: { 'Content-Type': 'application/json' }, body: { error: 'Authentication failed.' } };
+    return;
+  }
+
   if (!req.body || !req.body.prompt) {
     context.res = { status: 400, body: { error: 'Missing prompt' } };
     return;
