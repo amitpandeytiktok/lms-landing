@@ -1,349 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LMS - Learning Management System</title>
-  <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LMS — Learning Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- ============================================ -->
-<!-- SECTION 2: ALL COURSES                       -->
-<!-- ============================================ -->
-<section class="section courses-section">
-  <div class="section-badge">2</div>
-  <h2 class="section-label">ALL COURSES (DASHBOARD)</h2>
-
-  <div class="courses-container card">
-    <!-- Header -->
-    <div class="courses-header">
-      <h2 class="courses-title">All Courses</h2>
-      <div class="courses-filters">
-        <button class="filter-btn active">All</button>
-        <button class="filter-btn">Live</button>
-        <button class="filter-btn">Upcoming</button>
-        <button class="filter-btn">Completed</button>
-      </div>
-      <div class="courses-actions">
-        <div class="category-dropdown">
-          <span>Category</span>
-          <i class="fas fa-chevron-down"></i>
+  <!-- ==================== DASHBOARD VIEW ==================== -->
+  <div id="dashboard-view">
+    <div class="courses-container card">
+      <div class="courses-header">
+        <h2>All Courses</h2>
+        <div class="courses-filters">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="live">Live</button>
+          <button class="filter-btn" data-filter="upcoming">Upcoming</button>
+          <button class="filter-btn" data-filter="completed">Completed</button>
         </div>
-        <div class="view-toggle">
-          <button class="view-btn active"><i class="fas fa-th-large"></i></button>
-          <button class="view-btn"><i class="fas fa-list"></i></button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Course Cards Grid -->
-    <div class="courses-grid">
-      <!-- Card 1 -->
-      <div class="course-card">
-        <div class="course-image" style="background: linear-gradient(135deg, #1a0533 0%, #3d1a6e 40%, #e05530 70%, #f5a623 100%);">
-          <div class="course-badge live">● Live</div>
-          <div class="course-img-content">
-            <div class="palm-tree"></div>
-          </div>
-        </div>
-        <div class="course-info">
-          <h4 class="course-week">Week 1</h4>
-          <p class="course-name">Prompt Engineering – Zero to Hero</p>
-          <div class="course-progress">
-            <span class="progress-text">100%</span>
-            <div class="progress-bar">
-              <div class="progress-fill green" style="width: 100%;"></div>
-            </div>
-          </div>
-          <div class="course-meta">
-            <span><i class="fas fa-book"></i> 12 Lessons</span>
-            <span><i class="fas fa-tasks"></i> 24 Tasks</span>
+        <div class="courses-actions">
+          <select id="category-select" class="category-dropdown">
+            <option value="all">All Categories</option>
+          </select>
+          <div class="view-toggle">
+            <button class="toggle-btn active" data-view="grid"><i class="fas fa-th"></i></button>
+            <button class="toggle-btn" data-view="list"><i class="fas fa-list"></i></button>
           </div>
         </div>
       </div>
-
-      <!-- Card 2 -->
-      <div class="course-card">
-        <div class="course-image" style="background: linear-gradient(135deg, #e84830 0%, #f07040 50%, #f5a050 100%);">
-          <div class="course-badge live">● Live</div>
-          <div class="course-img-content bridge"></div>
-        </div>
-        <div class="course-info">
-          <h4 class="course-week">Week 2</h4>
-          <p class="course-name">Scaling Yourself with AI</p>
-          <div class="course-progress">
-            <span class="progress-text">37%</span>
-            <div class="progress-bar">
-              <div class="progress-fill blue" style="width: 37%;"></div>
-            </div>
-          </div>
-          <div class="course-meta">
-            <span><i class="fas fa-book"></i> 14 Lessons</span>
-            <span><i class="fas fa-tasks"></i> 18 Tasks</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Card 3 -->
-      <div class="course-card">
-        <div class="course-image" style="background: linear-gradient(135deg, #0a1628 0%, #1a3a5c 40%, #e05530 70%, #f5a623 100%);">
-          <div class="course-badge upcoming">Upcoming</div>
-          <div class="course-img-content robot-scene"></div>
-        </div>
-        <div class="course-info">
-          <h4 class="course-week">Week 3</h4>
-          <p class="course-name">Ideas to Prototypes</p>
-          <div class="course-progress">
-            <span class="progress-text">0%</span>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: 0%;"></div>
-            </div>
-          </div>
-          <div class="course-meta">
-            <span><i class="fas fa-book"></i> 13 Lessons</span>
-            <span><i class="fas fa-tasks"></i> 20 Tasks</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Card 4 -->
-      <div class="course-card">
-        <div class="course-image" style="background: linear-gradient(135deg, #1a0a3e 0%, #2d1b69 50%, #4a2d8a 100%);">
-          <div class="course-badge upcoming">Upcoming</div>
-          <div class="course-img-content ai-robot"></div>
-        </div>
-        <div class="course-info">
-          <h4 class="course-week">Week 4</h4>
-          <p class="course-name">AI Agents & Your Workforce</p>
-          <div class="course-progress">
-            <span class="progress-text">0%</span>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: 0%;"></div>
-            </div>
-          </div>
-          <div class="course-meta">
-            <span><i class="fas fa-book"></i> 12 Lessons</span>
-            <span><i class="fas fa-tasks"></i> 16 Tasks</span>
-          </div>
-        </div>
-      </div>
+      <div id="courses-grid" class="courses-grid"></div>
     </div>
   </div>
-</section>
 
-<!-- ============================================ -->
-<!-- SECTION 3: COURSE INSIDE VIEW                -->
-<!-- ============================================ -->
-<section class="section course-view-section">
-  <div class="section-badge green">3</div>
-  <h2 class="section-label">COURSE INSIDE VIEW (LEARNING EXPERIENCE)</h2>
+  <!-- ==================== COURSE VIEW ==================== -->
+  <div id="course-view" style="display:none">
+    <button id="back-to-dashboard" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Courses</button>
+    <div class="course-view-container">
 
-  <div class="course-view-container">
-    <!-- LEFT PANEL: Course Content Sidebar -->
-    <div class="panel sidebar-panel card">
-      <h3 class="panel-title">Course Content</h3>
+      <!-- LEFT: Sidebar -->
+      <div id="sidebar-panel" class="panel sidebar-panel card"></div>
 
-      <!-- Week 1 -->
-      <div class="week-group open">
-        <div class="week-header">
-          <span>Week 1: Prompt Engineering</span>
-          <i class="fas fa-chevron-down"></i>
+      <!-- CENTER: Lesson Content -->
+      <div class="panel lesson-panel card">
+        <div class="lesson-header-bar">
+          <span class="lesson-content-title">Lesson Content</span>
+          <div class="slide-counter" id="slide-counter">1 / 5</div>
         </div>
-        <div class="week-content">
-          <!-- Module 1 -->
-          <div class="module-group open">
-            <div class="module-header">
-              <i class="fas fa-caret-down"></i>
-              <span>Module 1: Introduction</span>
-            </div>
-            <div class="module-content">
-              <div class="lesson-item completed">
-                <span class="lesson-icon">○</span>
-                <span class="lesson-name">Lesson 1: What is AI?</span>
-                <i class="fas fa-check lesson-check"></i>
-              </div>
-              <div class="lesson-item completed active-lesson">
-                <span class="lesson-icon filled">●</span>
-                <span class="lesson-name">Lesson 2: AI Mindset</span>
-                <i class="fas fa-check lesson-check"></i>
-              </div>
-              <div class="lesson-item completed">
-                <span class="lesson-icon">○</span>
-                <span class="lesson-name">Lesson 3: Common Mistakes</span>
-                <i class="fas fa-check lesson-check"></i>
-              </div>
-            </div>
-          </div>
+        <h2 id="lesson-main-title" class="lesson-main-title"></h2>
 
-          <!-- Module 2 -->
-          <div class="module-group open">
-            <div class="module-header">
-              <i class="fas fa-caret-down"></i>
-              <span>Module 2: Prompt Basics</span>
-            </div>
-            <div class="module-content">
-              <div class="lesson-item completed">
-                <span class="lesson-icon">○</span>
-                <span class="lesson-name">Lesson 1: What is a Prompt?</span>
-                <i class="fas fa-check lesson-check"></i>
-              </div>
-              <div class="lesson-item current">
-                <span class="lesson-icon current-icon">□</span>
-                <span class="lesson-name highlight">Lesson 2: Anatomy of a Prompt</span>
-                <span class="lesson-plus">+</span>
-              </div>
-              <div class="lesson-item">
-                <span class="lesson-icon">○</span>
-                <span class="lesson-name">Lesson 3: Role-based Prompting</span>
-              </div>
-              <div class="lesson-item">
-                <span class="lesson-icon">○</span>
-                <span class="lesson-name">Lesson 4: Context & Constraints</span>
-              </div>
-            </div>
+        <!-- Slide Viewer -->
+        <div id="slide-viewer" class="slide-viewer">
+          <div id="slide-content" class="slide-content"></div>
+          <div class="slide-controls">
+            <button id="slide-prev" class="slide-nav-btn"><i class="fas fa-chevron-left"></i> Previous</button>
+            <div class="slide-dots" id="slide-dots"></div>
+            <button id="slide-next" class="slide-nav-btn">Next <i class="fas fa-chevron-right"></i></button>
           </div>
+        </div>
 
-          <!-- Module 3 -->
-          <div class="module-group collapsed">
-            <div class="module-header">
-              <i class="fas fa-caret-right"></i>
-              <span>Module 3: Productivity with AI</span>
-            </div>
+        <!-- Tabs -->
+        <div class="lesson-tabs">
+          <button class="tab active" data-tab="overview">Overview</button>
+          <button class="tab" data-tab="notes">Notes</button>
+          <button class="tab" data-tab="resources">Resources</button>
+        </div>
+        <div id="tab-content" class="tab-content"></div>
+      </div>
+
+      <!-- RIGHT: AI Playground -->
+      <div class="panel playground-panel card">
+        <div class="playground-header">
+          <h3 class="playground-title"><i class="fas fa-robot"></i> AI Playground (Practice)</h3>
+        </div>
+        <div class="playground-content">
+          <h4 class="playground-label">Your Task</h4>
+          <p id="exercise-task" class="playground-task"></p>
+          <div id="exercise-hint" class="exercise-hint" style="display:none">
+            <i class="fas fa-lightbulb"></i> <span id="hint-text"></span>
           </div>
-
-          <!-- Module 4 -->
-          <div class="module-group collapsed">
-            <div class="module-header">
-              <i class="fas fa-caret-right"></i>
-              <span>Module 4: Hands-on Practice</span>
-            </div>
+          <button id="show-hint-btn" class="btn-hint">💡 Show Hint</button>
+          <h4 class="playground-label">Your Prompt</h4>
+          <textarea id="prompt-input" class="playground-input" placeholder="Type your prompt here..."></textarea>
+          <button id="run-ai-btn" class="btn-run"><i class="fas fa-play"></i> Run with AI</button>
+          <h4 class="playground-label">AI Output</h4>
+          <div id="ai-output" class="playground-output">
+            <span class="placeholder-text">Your AI response will appear here...</span>
+          </div>
+          <div class="playground-actions">
+            <button id="save-btn" class="btn-save"><i class="fas fa-bookmark"></i> Save</button>
+            <button id="submit-btn" class="btn-submit"><i class="fas fa-check"></i> Submit Task</button>
           </div>
         </div>
       </div>
 
-      <!-- Week 2 -->
-      <div class="week-group">
-        <div class="week-header">
-          <span>Week 2: Scaling with AI</span>
-          <i class="fas fa-chevron-down"></i>
-        </div>
-      </div>
-
-      <!-- Week 3 -->
-      <div class="week-group">
-        <div class="week-header">
-          <span>Week 3: Ideas to Prototypes</span>
-          <i class="fas fa-chevron-down"></i>
-        </div>
-      </div>
-
-      <!-- Week 4 -->
-      <div class="week-group">
-        <div class="week-header">
-          <span>Week 4: AI Agents & Workforce</span>
-          <i class="fas fa-chevron-down"></i>
-        </div>
-      </div>
-    </div>
-
-    <!-- CENTER PANEL: Lesson Content -->
-    <div class="panel lesson-panel card">
-      <div class="lesson-header-bar">
-        <span class="lesson-content-title">Lesson Content</span>
-        <button class="close-btn">✕</button>
-      </div>
-
-      <h2 class="lesson-main-title">Anatomy of a Good Prompt</h2>
-
-      <!-- Video Player -->
-      <div class="video-player">
-        <div class="video-screen">
-          <div class="video-content">
-            <p class="video-text-main">A good prompt has<br /><strong>4 key components</strong></p>
-            <div class="video-components">
-              <span class="comp-tag role">Role</span>
-              <span class="comp-arrow">→</span>
-              <span class="comp-tag context">Context</span>
-              <span class="comp-arrow">→</span>
-              <span class="comp-tag task">Task</span>
-              <span class="comp-arrow">→</span>
-              <span class="comp-tag format">Format</span>
-            </div>
-          </div>
-        </div>
-        <div class="video-controls">
-          <div class="video-progress">
-            <div class="video-progress-bar">
-              <div class="video-progress-fill" style="width: 35%;"></div>
-              <div class="video-progress-thumb" style="left: 35%;"></div>
-            </div>
-          </div>
-          <div class="video-buttons">
-            <div class="video-left-controls">
-              <button class="video-btn"><i class="fas fa-play"></i></button>
-              <span class="video-time">4:28 / 12:45</span>
-            </div>
-            <div class="video-right-controls">
-              <button class="video-btn"><i class="fas fa-volume-up"></i></button>
-              <button class="video-btn"><i class="fas fa-closed-captioning"></i></button>
-              <button class="video-btn"><i class="fas fa-clone"></i></button>
-              <button class="video-btn"><i class="fas fa-expand"></i></button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tabs -->
-      <div class="lesson-tabs">
-        <button class="tab active">Overview</button>
-        <button class="tab">Notes</button>
-        <button class="tab">Resources</button>
-      </div>
-
-      <!-- Overview Content -->
-      <div class="lesson-overview">
-        <p class="overview-heading">In this lesson you will learn:</p>
-        <ul class="overview-list">
-          <li><i class="fas fa-check-circle"></i> The 4 components of a great prompt</li>
-          <li><i class="fas fa-check-circle"></i> Examples of good vs bad prompts</li>
-          <li><i class="fas fa-check-circle"></i> How to structure prompts for better output</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- RIGHT PANEL: AI Playground -->
-    <div class="panel playground-panel card">
-      <div class="playground-header">
-        <h3 class="playground-title">AI Playground (Practice)</h3>
-        <button class="close-btn">✕</button>
-      </div>
-
-      <div class="playground-content">
-        <h4 class="playground-label">Your Task</h4>
-        <p class="playground-task">Create a prompt to generate a marketing plan for a new product.</p>
-
-        <h4 class="playground-label">Your Prompt</h4>
-        <textarea class="playground-input" placeholder="Type your prompt here..."></textarea>
-
-        <button class="btn-run">Run with AI</button>
-
-        <h4 class="playground-label">AI Output</h4>
-        <div class="playground-output" contenteditable="false">
-          <span class="placeholder-text">Your AI response will appear here...</span>
-        </div>
-
-        <div class="playground-actions">
-          <button class="btn-save">Save</button>
-          <button class="btn-submit">Submit Task</button>
-        </div>
-      </div>
     </div>
   </div>
-</section>
 
-<script src="script.js"></script>
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
