@@ -16,6 +16,36 @@ const state = {
 // --------------- AUTH ---------------
 let authMode = 'login'; // 'login' or 'signup'
 
+// --------------- ANALYTICS TRACKING ---------------
+const trackEvent = (event, data = {}) => {
+  try {
+    const token = localStorage.getItem('lms_token') || '';
+    const payload = JSON.stringify({ event, data });
+    const headers = { type: 'application/json' };
+    const blob = new Blob([payload], headers);
+    if (navigator.sendBeacon) {
+      // sendBeacon can't set custom headers, so we use fetch for token
+      if (token) {
+        fetch('/api/trackevent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
+          body: payload,
+          keepalive: true
+        }).catch(() => {});
+      } else {
+        navigator.sendBeacon('/api/trackevent', blob);
+      }
+    } else {
+      fetch('/api/trackevent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { 'X-Auth-Token': token } : {}) },
+        body: payload,
+        keepalive: true
+      }).catch(() => {});
+    }
+  } catch { /* never block UI */ }
+};
+
 const showAuthModal = (mode) => {
   authMode = mode || 'login';
   const modal = byId('auth-modal');
@@ -96,6 +126,7 @@ const handleAuth = async (e) => {
     
     hideAuthModal();
     showAppView(data.user);
+    trackEvent(authMode === 'signup' ? 'signup' : 'login', { email: data.user.email });
     showToast(`Welcome${authMode === 'signup' ? '' : ' back'}, ${data.user.name}! 🎉`, 'success');
   } catch (err) {
     showAuthError('Network error. Please check your connection.');
@@ -391,6 +422,7 @@ const navigateToCourseDetail = () => {
   hideAllViews();
   byId('course-detail-view').style.display = 'block';
   renderCourseDetail();
+  trackEvent('course_start');
 };
 
 // ===============================================
@@ -421,6 +453,7 @@ const navigateToBuyPage = () => {
   state.currentView = 'buy';
   hideAllViews();
   byId('buy-view').style.display = 'block';
+  trackEvent('buy_page_view');
 };
 
 const navigateToAdmin = () => {
@@ -428,6 +461,7 @@ const navigateToAdmin = () => {
   hideAllViews();
   byId('admin-view').style.display = 'block';
   renderAdminView();
+  loadAnalytics();
 };
 
 const renderAdminView = async () => {
@@ -505,6 +539,102 @@ const adminRevokeAccess = async (email) => {
   }
 };
 
+// --------------- ANALYTICS DASHBOARD ---------------
+const loadAnalytics = async () => {
+  const summaryEl = byId('analytics-summary');
+  const chartEl = byId('analytics-chart');
+  const lessonsEl = byId('analytics-top-lessons');
+  const recentEl = byId('analytics-recent');
+  summaryEl.innerHTML = '<p style="text-align:center;padding:20px;grid-column:1/-1;">Loading analytics...</p>';
+  chartEl.innerHTML = '';
+  lessonsEl.innerHTML = '';
+  recentEl.innerHTML = '';
+
+  try {
+    const token = localStorage.getItem('lms_token');
+    const days = byId('analytics-days').value || 7;
+    const res = await fetch(`/api/analytics?days=${days}`, {
+      headers: { 'X-Auth-Token': token }
+    });
+    if (!res.ok) throw new Error('Failed to fetch analytics');
+    const data = await res.json();
+    renderAnalyticsSummary(data.summary);
+    renderAnalyticsChart(data.dailyBreakdown);
+    renderTopLessons(data.topLessons);
+    renderRecentActivity(data.recentEvents);
+  } catch (err) {
+    summaryEl.innerHTML = '<p style="color:#ff6b6b;text-align:center;padding:20px;grid-column:1/-1;">Error loading analytics.</p>';
+  }
+};
+
+const renderAnalyticsSummary = (s) => {
+  const cards = [
+    { label: 'Page Views', value: s.totalPageViews, icon: 'fa-eye', color: '#6c3ce0' },
+    { label: 'Signups', value: s.totalSignups, icon: 'fa-user-plus', color: '#10b981' },
+    { label: 'Logins', value: s.totalLogins, icon: 'fa-sign-in-alt', color: '#3b82f6' },
+    { label: 'Course Starts', value: s.totalCourseStarts, icon: 'fa-play-circle', color: '#f59e0b' },
+    { label: 'Lesson Views', value: s.totalLessonStarts, icon: 'fa-book-open', color: '#ec4899' },
+    { label: 'Narrations', value: s.totalNarrationPlays, icon: 'fa-headphones', color: '#8b5cf6' },
+    { label: 'Buy Page', value: s.totalBuyPageViews, icon: 'fa-shopping-cart', color: '#ef4444' },
+    { label: 'Unique Visitors', value: s.uniqueVisitors, icon: 'fa-users', color: '#06b6d4' },
+    { label: 'Registered Users', value: s.totalRegisteredUsers, icon: 'fa-user-check', color: '#14b8a6' },
+    { label: 'With Access', value: s.usersWithAccess, icon: 'fa-unlock', color: '#a855f7' }
+  ];
+  byId('analytics-summary').innerHTML = cards.map(c => `
+    <div class="analytics-card" style="border-left: 4px solid ${c.color}">
+      <div class="analytics-card-icon" style="color:${c.color}"><i class="fas ${c.icon}"></i></div>
+      <div class="analytics-card-value">${c.value.toLocaleString()}</div>
+      <div class="analytics-card-label">${c.label}</div>
+    </div>
+  `).join('');
+};
+
+const renderAnalyticsChart = (daily) => {
+  const chartEl = byId('analytics-chart');
+  if (!daily || daily.length === 0) { chartEl.innerHTML = '<p>No data</p>'; return; }
+  const maxViews = Math.max(...daily.map(d => d.pageViews), 1);
+  chartEl.innerHTML = daily.map(d => {
+    const pct = Math.max((d.pageViews / maxViews) * 100, 2);
+    const dateLabel = d.date.slice(5); // MM-DD
+    return `
+      <div class="analytics-bar-col">
+        <div class="analytics-bar-value">${d.pageViews}</div>
+        <div class="analytics-bar" style="height:${pct}%"></div>
+        <div class="analytics-bar-label">${dateLabel}</div>
+      </div>
+    `;
+  }).join('');
+};
+
+const renderTopLessons = (lessons) => {
+  const el = byId('analytics-top-lessons');
+  if (!lessons || lessons.length === 0) { el.innerHTML = '<p class="analytics-empty">No lesson data yet</p>'; return; }
+  el.innerHTML = `<table class="analytics-table">
+    <thead><tr><th>Lesson</th><th>Views</th></tr></thead>
+    <tbody>${lessons.map(l => `<tr><td>${l.lessonId}</td><td>${l.views}</td></tr>`).join('')}</tbody>
+  </table>`;
+};
+
+const renderRecentActivity = (events) => {
+  const el = byId('analytics-recent');
+  if (!events || events.length === 0) { el.innerHTML = '<p class="analytics-empty">No recent events</p>'; return; }
+  const badgeColors = {
+    page_view: '#6c3ce0', signup: '#10b981', login: '#3b82f6',
+    course_start: '#f59e0b', lesson_start: '#ec4899',
+    narration_play: '#8b5cf6', buy_page_view: '#ef4444'
+  };
+  el.innerHTML = events.map(ev => {
+    const color = badgeColors[ev.event] || '#666';
+    const time = ev.timestamp ? new Date(ev.timestamp).toLocaleString() : '';
+    const user = ev.userId === 'anonymous' ? 'anonymous' : ev.userId;
+    return `<div class="analytics-event-item">
+      <span class="analytics-event-badge" style="background:${color}">${ev.event.replace(/_/g, ' ')}</span>
+      <span class="analytics-event-user" title="${user}">${user.length > 20 ? user.slice(0, 18) + '…' : user}</span>
+      <span class="analytics-event-time">${time}</span>
+    </div>`;
+  }).join('');
+};
+
 // --------------- SIDEBAR ---------------
 const renderSidebar = (week) => {
   const panel = byId('sidebar-panel');
@@ -545,6 +675,7 @@ const renderLesson = (lessonId) => {
   state.currentLessonId = lessonId;
   state.currentSlide = 0;
   state.currentTab = 'overview';
+  trackEvent('lesson_start', { lessonId });
 
   // Update sidebar highlight
   renderSidebar(week);
@@ -725,6 +856,7 @@ const startNarration = async () => {
   const key = `${state.currentLessonId}-${state.currentSlide}`;
   const suffix = lang === 'hi' ? 'hi' : 'en';
   const audioUrl = `${AUDIO_BASE}/${key}-${suffix}.mp3`;
+  trackEvent('narration_play', { lessonId: state.currentLessonId, language: suffix });
 
   narration.autoAdvance = true;
 
@@ -1152,4 +1284,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Hide dashboard initially until auth check
   byId('dashboard-view').style.display = 'none';
   checkAuth();
+  // Track page view
+  trackEvent('page_view', { referrer: document.referrer || '' });
 });

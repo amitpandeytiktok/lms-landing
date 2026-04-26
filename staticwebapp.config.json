@@ -31,6 +31,14 @@
     {
       "route": "/api/hinglish",
       "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/trackevent",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/analytics",
+      "allowedRoles": ["anonymous"]
     }
   ],
   "navigationFallback": {

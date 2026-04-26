@@ -289,8 +289,40 @@
   <!-- ==================== ADMIN VIEW ==================== -->
   <div id="admin-view" style="display:none">
     <button class="back-btn" onclick="navigateToDashboard()"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
+
+    <!-- Analytics Dashboard -->
+    <div class="analytics-section">
+      <h2 class="admin-title">📊 Analytics Dashboard</h2>
+      <div class="analytics-period">
+        <select id="analytics-days" onchange="loadAnalytics()">
+          <option value="7" selected>Last 7 days</option>
+          <option value="14">Last 14 days</option>
+          <option value="30">Last 30 days</option>
+        </select>
+        <button class="analytics-refresh-btn" onclick="loadAnalytics()"><i class="fas fa-sync-alt"></i> Refresh</button>
+      </div>
+      <div id="analytics-summary" class="analytics-summary-grid"></div>
+      <div class="analytics-charts-row">
+        <div class="analytics-chart-card">
+          <h3>Daily Page Views</h3>
+          <div id="analytics-chart" class="analytics-bar-chart"></div>
+        </div>
+      </div>
+      <div class="analytics-tables-row">
+        <div class="analytics-table-card">
+          <h3>🏆 Top Lessons</h3>
+          <div id="analytics-top-lessons"></div>
+        </div>
+        <div class="analytics-table-card">
+          <h3>⚡ Recent Activity</h3>
+          <div id="analytics-recent" class="analytics-recent-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Management -->
     <div class="admin-container card">
-      <h2 class="admin-title">🔧 Admin Panel</h2>
+      <h2 class="admin-title">🔧 User Management</h2>
       <div class="admin-form">
         <input type="email" id="admin-email-input" placeholder="User email" class="admin-input">
         <button class="grant-btn" onclick="adminGrantAccess()">Grant Access</button>
