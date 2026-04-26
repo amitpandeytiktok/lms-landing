@@ -952,6 +952,18 @@ html {
 /* ============================================
    DASHBOARD — COURSES HEADER
    ============================================ */
+#dashboard-view {
+  padding-top: 80px;
+}
+
+#course-detail-view {
+  padding-top: 80px;
+}
+
+#course-view {
+  padding-top: 80px;
+}
+
 .courses-container {
   padding: 28px;
 }
@@ -2132,6 +2144,7 @@ html {
 #buy-view {
   max-width: 600px;
   margin: 0 auto;
+  padding-top: 80px;
 }
 
 .buy-container {
@@ -2243,6 +2256,7 @@ html {
 #admin-view {
   max-width: 900px;
   margin: 0 auto;
+  padding-top: 80px;
 }
 
 .admin-container {

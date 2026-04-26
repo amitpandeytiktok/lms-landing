@@ -449,6 +449,16 @@ const navigateToDashboard = () => {
   renderDashboard();
 };
 
+const navigateHome = () => {
+  if (state.currentUser) {
+    navigateToDashboard();
+  } else {
+    byId('landing-view').style.display = '';
+    hideAllViews();
+    window.scrollTo(0, 0);
+  }
+};
+
 const navigateToBuyPage = () => {
   state.currentView = 'buy';
   hideAllViews();
