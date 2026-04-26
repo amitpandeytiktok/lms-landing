@@ -9,7 +9,6 @@ const state = {
   currentLessonId: null,
   currentSlide: 0,
   currentTab: 'overview',
-  activeFilter: 'all',
   progress: {}
 };
 
@@ -280,21 +279,65 @@ const showToast = (message, type = 'success') => {
 // ===============================================
 //  DASHBOARD RENDERING
 // ===============================================
+// --------------- COURSE AGGREGATE HELPERS ---------------
+const getCourseProgress = () => {
+  const weeks = COURSE_DATA.weeks;
+  let total = 0, completed = 0;
+  weeks.forEach(w => {
+    const lessons = getAllLessonsForWeek(w);
+    total += lessons.length;
+    completed += lessons.filter(l => state.progress[l.id]?.completed).length;
+  });
+  return total === 0 ? 0 : Math.round((completed / total) * 100);
+};
+
+const getCourseTotalLessons = () => {
+  return COURSE_DATA.weeks.reduce((sum, w) => sum + getAllLessonsForWeek(w).length, 0);
+};
+
+const getCourseTotalTasks = () => {
+  return COURSE_DATA.weeks.reduce((sum, w) => sum + (w.tasksCount ?? 0), 0);
+};
+
+// ===============================================
+//  DASHBOARD – SINGLE COURSE TILE
+// ===============================================
 const renderDashboard = () => {
   const grid = byId('courses-grid');
-  const weeks = getFilteredWeeks();
-  if (weeks.length === 0) {
-    grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:#999;padding:40px;">No courses match this filter.</p>`;
-    return;
-  }
-  grid.innerHTML = weeks.map(week => {
+  const pct = getCourseProgress();
+  const fillClass = pct === 100 ? 'green' : 'blue';
+  grid.innerHTML = `
+    <div class="course-card" data-course="ai-beginner">
+      <div class="card-image" style="background:linear-gradient(135deg, #1a0533 0%, #2d1560 30%, #6c3ce0 65%, #a855f7 100%)">
+        <span class="card-emoji">🤖</span>
+      </div>
+      <div class="card-info">
+        <div class="card-week-title">AI Beginner Course</div>
+        <div class="card-course-name">Master AI fundamentals across ${COURSE_DATA.weeks.length} weeks</div>
+        <div class="progress-wrapper">
+          <div class="progress-label"><span>Progress</span><span>${pct}%</span></div>
+          <div class="progress-bar"><div class="progress-fill ${fillClass}" style="width:${pct}%"></div></div>
+        </div>
+        <div class="card-meta">
+          <span><i class="fas fa-book-open"></i> ${getCourseTotalLessons()} lessons</span>
+          <span><i class="fas fa-tasks"></i> ${getCourseTotalTasks()} tasks</span>
+          <span><i class="fas fa-calendar-week"></i> ${COURSE_DATA.weeks.length} weeks</span>
+        </div>
+      </div>
+    </div>`;
+};
+
+// ===============================================
+//  COURSE DETAIL – WEEK TILES
+// ===============================================
+const renderCourseDetail = () => {
+  const grid = byId('weeks-grid');
+  grid.innerHTML = COURSE_DATA.weeks.map(week => {
     const pct = getWeekProgress(week);
     const fillClass = pct === 100 ? 'green' : 'blue';
-    const badgeClass = week.badge || 'live';
     return `
       <div class="course-card" data-week-id="${week.id}">
         <div class="card-image" style="background:${week.gradient || 'linear-gradient(135deg,#6c3ce0,#a855f7)'}">
-          <span class="card-badge ${badgeClass}">${badgeClass}</span>
           <span class="card-emoji">${week.emoji || '📚'}</span>
         </div>
         <div class="card-info">
@@ -313,11 +356,12 @@ const renderDashboard = () => {
   }).join('');
 };
 
-const getFilteredWeeks = () => {
-  const f = state.activeFilter;
-  if (f === 'all') return COURSE_DATA.weeks;
-  if (f === 'completed') return COURSE_DATA.weeks.filter(w => getWeekProgress(w) === 100);
-  return COURSE_DATA.weeks.filter(w => (w.badge || '').toLowerCase() === f);
+const navigateToCourseDetail = () => {
+  state.currentView = 'course-detail';
+  byId('dashboard-view').style.display = 'none';
+  byId('course-detail-view').style.display = 'block';
+  byId('course-view').style.display = 'none';
+  renderCourseDetail();
 };
 
 // ===============================================
@@ -329,6 +373,7 @@ const navigateToCourse = (weekId) => {
   state.currentView = 'course';
   state.currentWeekId = weekId;
   byId('dashboard-view').style.display = 'none';
+  byId('course-detail-view').style.display = 'none';
   byId('course-view').style.display = 'block';
   renderSidebar(week);
   const firstLesson = getFirstIncompleteLesson(week);
@@ -340,6 +385,7 @@ const navigateToDashboard = () => {
   state.currentWeekId = null;
   state.currentLessonId = null;
   byId('course-view').style.display = 'none';
+  byId('course-detail-view').style.display = 'none';
   byId('dashboard-view').style.display = 'block';
   renderDashboard();
 };
@@ -610,38 +656,26 @@ const generateMockResponse = (task, userPrompt) => {
 // ===============================================
 const setupEventListeners = () => {
 
-  // --- Dashboard: Course card click ---
+  // --- Dashboard: Course card click → course detail ---
   byId('courses-grid').addEventListener('click', (e) => {
+    const card = e.target.closest('.course-card');
+    if (card) navigateToCourseDetail();
+  });
+
+  // --- Course Detail: Week card click → lesson view ---
+  byId('weeks-grid').addEventListener('click', (e) => {
     const card = e.target.closest('.course-card');
     if (card) navigateToCourse(card.dataset.weekId);
   });
 
-  // --- Dashboard: Filter buttons ---
-  $('.courses-filters').addEventListener('click', (e) => {
-    const btn = e.target.closest('.filter-btn');
-    if (!btn) return;
-    $$('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    state.activeFilter = btn.dataset.filter;
-    renderDashboard();
-  });
+  // --- Back to courses from course detail ---
+  byId('back-to-courses').addEventListener('click', navigateToDashboard);
 
-  // --- Dashboard: View toggle ---
-  $('.view-toggle').addEventListener('click', (e) => {
-    const btn = e.target.closest('.toggle-btn');
-    if (!btn) return;
-    $$('.toggle-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const grid = byId('courses-grid');
-    if (btn.dataset.view === 'list') {
-      grid.style.gridTemplateColumns = '1fr';
-    } else {
-      grid.style.gridTemplateColumns = '';
-    }
+  // --- Back to Dashboard from lesson view ---
+  byId('back-to-dashboard').addEventListener('click', () => {
+    // Go back to course detail, not all the way to dashboard
+    navigateToCourseDetail();
   });
-
-  // --- Back to Dashboard ---
-  byId('back-to-dashboard').addEventListener('click', navigateToDashboard);
 
   // --- Sidebar: Module toggle + Lesson click ---
   byId('sidebar-panel').addEventListener('click', (e) => {

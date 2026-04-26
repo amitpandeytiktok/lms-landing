@@ -158,30 +158,26 @@
   <div id="dashboard-view">
     <div class="courses-container card">
       <div class="courses-header">
-        <h2>All Courses</h2>
-        <div class="courses-filters">
-          <button class="filter-btn active" data-filter="all">All</button>
-          <button class="filter-btn" data-filter="live">Live</button>
-          <button class="filter-btn" data-filter="upcoming">Upcoming</button>
-          <button class="filter-btn" data-filter="completed">Completed</button>
-        </div>
-        <div class="courses-actions">
-          <select id="category-select" class="category-dropdown">
-            <option value="all">All Categories</option>
-          </select>
-          <div class="view-toggle">
-            <button class="toggle-btn active" data-view="grid"><i class="fas fa-th"></i></button>
-            <button class="toggle-btn" data-view="list"><i class="fas fa-list"></i></button>
-          </div>
-        </div>
+        <h2>Your Courses</h2>
       </div>
       <div id="courses-grid" class="courses-grid"></div>
     </div>
   </div>
 
+  <!-- ==================== COURSE DETAIL VIEW (Weeks) ==================== -->
+  <div id="course-detail-view" style="display:none">
+    <button id="back-to-courses" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Courses</button>
+    <div class="courses-container card">
+      <div class="courses-header">
+        <h2 id="course-detail-title">AI Beginner Course</h2>
+      </div>
+      <div id="weeks-grid" class="courses-grid"></div>
+    </div>
+  </div>
+
   <!-- ==================== COURSE VIEW ==================== -->
   <div id="course-view" style="display:none">
-    <button id="back-to-dashboard" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Courses</button>
+    <button id="back-to-dashboard" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Weeks</button>
     <div class="course-view-container">
 
       <!-- LEFT: Sidebar -->
