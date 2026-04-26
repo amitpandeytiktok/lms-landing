@@ -20,21 +20,68 @@ const checkAuth = async () => {
     const data = await res.json();
     const user = data.clientPrincipal;
     if (user) {
-      const section = byId('auth-section');
-      const initials = (user.userDetails || 'U').substring(0, 2).toUpperCase();
-      section.innerHTML = `
-        <div class="user-info">
-          <div class="user-avatar">${initials}</div>
-          <span class="user-name">${user.userDetails || 'User'}</span>
-        </div>
-        <a href="/.auth/logout?post_logout_redirect_uri=/" class="logout-btn">Sign Out</a>
-      `;
+      showAppView(user);
       return user;
     }
   } catch (e) {
-    // Not authenticated or running locally — that's fine
+    // Not authenticated or running locally
   }
+  showLandingView();
   return null;
+};
+
+const showAppView = (user) => {
+  document.body.classList.add('app-mode');
+  const landing = byId('landing-view');
+  if (landing) landing.style.display = 'none';
+  byId('dashboard-view').style.display = '';
+  
+  // Update nav for app mode
+  const navLinks = byId('nav-links');
+  if (navLinks) navLinks.style.display = 'none';
+  
+  // Update auth section
+  const section = byId('auth-section');
+  const initials = (user.userDetails || 'U').substring(0, 2).toUpperCase();
+  section.innerHTML = `
+    <div class="user-info">
+      <div class="user-avatar">${initials}</div>
+      <span class="user-name">${user.userDetails || 'User'}</span>
+    </div>
+    <a href="/.auth/logout?post_logout_redirect_uri=/" class="logout-btn">Sign Out</a>
+  `;
+  
+  // Update brand for app mode
+  const brand = document.querySelector('.nav-brand span');
+  if (brand) brand.innerHTML = 'Techwave <span class="brand-highlight">AI Academy</span>';
+};
+
+const showLandingView = () => {
+  // Show landing, hide dashboard
+  const landing = byId('landing-view');
+  if (landing) landing.style.display = '';
+  byId('dashboard-view').style.display = 'none';
+  
+  // Setup scroll reveal
+  setupScrollReveal();
+  
+  // Scroll-based nav background
+  window.addEventListener('scroll', () => {
+    const nav = byId('main-nav');
+    if (nav) nav.classList.toggle('scrolled', window.scrollY > 50);
+  });
+};
+
+const setupScrollReveal = () => {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+  
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 };
 
 // --------------- HELPERS ---------------
@@ -636,5 +683,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadProgress();
   renderDashboard();
   setupEventListeners();
+  // Hide dashboard initially until auth check
+  byId('dashboard-view').style.display = 'none';
   checkAuth();
 });
