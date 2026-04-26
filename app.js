@@ -435,7 +435,7 @@ const renderAdminView = async () => {
   container.innerHTML = '<p style="text-align:center;padding:20px;">Loading users...</p>';
   try {
     const token = localStorage.getItem('lms_token');
-    const res = await fetch('/api/admin-users', {
+    const res = await fetch('/api/listusers', {
       headers: { 'X-Auth-Token': token }
     });
     if (!res.ok) throw new Error('Failed to fetch users');
@@ -476,7 +476,7 @@ const adminGrantAccess = async () => {
 const adminGrantAccessFor = async (email) => {
   try {
     const token = localStorage.getItem('lms_token');
-    const res = await fetch('/api/admin-grant-access', {
+    const res = await fetch('/api/grantaccess', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
       body: JSON.stringify({ email, courseId: 'ai-beginner' })
@@ -492,7 +492,7 @@ const adminGrantAccessFor = async (email) => {
 const adminRevokeAccess = async (email) => {
   try {
     const token = localStorage.getItem('lms_token');
-    const res = await fetch('/api/admin-revoke-access', {
+    const res = await fetch('/api/revokeaccess', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
       body: JSON.stringify({ email, courseId: 'ai-beginner' })

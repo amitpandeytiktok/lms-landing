@@ -17,15 +17,15 @@
       "allowedRoles": ["anonymous"]
     },
     {
-      "route": "/api/admin-grant-access",
+      "route": "/api/grantaccess",
       "allowedRoles": ["anonymous"]
     },
     {
-      "route": "/api/admin-revoke-access",
+      "route": "/api/revokeaccess",
       "allowedRoles": ["anonymous"]
     },
     {
-      "route": "/api/admin-users",
+      "route": "/api/listusers",
       "allowedRoles": ["anonymous"]
     }
   ],
