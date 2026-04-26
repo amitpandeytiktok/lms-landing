@@ -1,4 +1,4 @@
-const { tableRequest } = require('../../shared/tableStorage');
+const { tableRequest } = require('../shared/tableStorage');
 
 const HEADERS = {
   'Content-Type': 'application/json',
