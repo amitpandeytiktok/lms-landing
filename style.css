@@ -9,7 +9,7 @@
 
 body {
   font-family: 'Inter', sans-serif;
-  background: #0a0f1e;
+  background: #0f1629;
   color: #e2e8f0;
   min-height: 100vh;
 }
@@ -52,7 +52,7 @@ body.app-mode {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #fff;
+  color: #f1f5f9;
   font-size: 18px;
   font-weight: 700;
 }
@@ -304,7 +304,7 @@ body.app-mode {
 }
 
 .brand-highlight {
-  color: #6c3ce0;
+  color: #a78bfa;
 }
 
 .nav-links {
@@ -313,7 +313,7 @@ body.app-mode {
 }
 
 .nav-links a {
-  color: rgba(255,255,255,0.6);
+  color: rgba(255,255,255,0.75);
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
@@ -422,10 +422,10 @@ body.app-mode {
 .hero-badge {
   display: inline-block;
   padding: 8px 20px;
-  background: rgba(108,60,224,0.15);
-  border: 1px solid rgba(108,60,224,0.3);
+  background: rgba(167,139,250,0.18);
+  border: 1px solid rgba(167,139,250,0.4);
   border-radius: 50px;
-  color: #a78bfa;
+  color: #c4b5fd;
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 32px;
@@ -442,7 +442,7 @@ body.app-mode {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #a78bfa, #6c3ce0, #3b82f6);
+  background: linear-gradient(135deg, #c4b5fd, #a78bfa, #818cf8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -450,7 +450,7 @@ body.app-mode {
 
 .hero-subtitle {
   font-size: 18px;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255,255,255,0.78);
   line-height: 1.7;
   max-width: 600px;
   margin: 0 auto 40px;
@@ -554,9 +554,9 @@ body.app-mode {
   align-items: center;
   gap: 48px;
   padding: 40px;
-  background: rgba(255,255,255,0.02);
-  border-top: 1px solid rgba(255,255,255,0.06);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.04);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
 .stat-item {
@@ -573,7 +573,7 @@ body.app-mode {
 
 .stat-label {
   font-size: 13px;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255,255,255,0.7);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -596,7 +596,7 @@ body.app-mode {
 
 .section-subtitle {
   text-align: center;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255,255,255,0.72);
   font-size: 16px;
   margin-bottom: 56px;
   max-width: 500px;
@@ -618,8 +618,8 @@ body.app-mode {
 }
 
 .feature-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
   border-radius: 20px;
   padding: 40px 32px;
   text-align: center;
@@ -628,8 +628,8 @@ body.app-mode {
 }
 
 .feature-card:hover {
-  background: rgba(255,255,255,0.06);
-  border-color: rgba(108,60,224,0.3);
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(167,139,250,0.4);
   transform: translateY(-4px);
 }
 
@@ -646,7 +646,7 @@ body.app-mode {
 }
 
 .feature-card p {
-  color: rgba(255,255,255,0.5);
+  color: rgba(255,255,255,0.72);
   font-size: 14px;
   line-height: 1.7;
 }
@@ -698,8 +698,8 @@ body.app-mode {
 }
 
 .timeline-content {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
   border-radius: 16px;
   padding: 24px;
   flex: 1;
@@ -707,8 +707,8 @@ body.app-mode {
 }
 
 .timeline-content:hover {
-  background: rgba(255,255,255,0.06);
-  border-color: rgba(108,60,224,0.3);
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(167,139,250,0.4);
 }
 
 .timeline-content h3 {
@@ -719,7 +719,7 @@ body.app-mode {
 }
 
 .timeline-content p {
-  color: rgba(255,255,255,0.5);
+  color: rgba(255,255,255,0.72);
   font-size: 14px;
   line-height: 1.6;
   margin-bottom: 12px;
@@ -733,8 +733,8 @@ body.app-mode {
 
 .timeline-meta span {
   font-size: 12px;
-  color: rgba(255,255,255,0.4);
-  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.65);
+  background: rgba(255,255,255,0.08);
   padding: 4px 10px;
   border-radius: 6px;
 }
@@ -842,7 +842,7 @@ body.app-mode {
 }
 
 .cta-content p {
-  color: rgba(255,255,255,0.5);
+  color: rgba(255,255,255,0.75);
   font-size: 16px;
   margin-bottom: 36px;
 }
@@ -871,7 +871,7 @@ body.app-mode {
 }
 
 .footer-text {
-  color: rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.5);
   font-size: 13px;
   margin-bottom: 16px;
 }
@@ -883,7 +883,7 @@ body.app-mode {
 }
 
 .footer-links a {
-  color: rgba(255,255,255,0.4);
+  color: rgba(255,255,255,0.6);
   text-decoration: none;
   font-size: 13px;
   transition: color 0.2s;
