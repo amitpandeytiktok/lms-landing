@@ -1,6 +1,6 @@
 {
   "bindings": [
-    { "authLevel": "anonymous", "type": "httpTrigger", "direction": "in", "name": "req", "methods": ["post", "options"], "route": "admin/grant-access" },
+    { "authLevel": "anonymous", "type": "httpTrigger", "direction": "in", "name": "req", "methods": ["post", "options"] },
     { "type": "http", "direction": "out", "name": "res" }
   ]
 }
