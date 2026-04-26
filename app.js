@@ -13,6 +13,30 @@ const state = {
   progress: {}
 };
 
+// --------------- AUTH ---------------
+const checkAuth = async () => {
+  try {
+    const res = await fetch('/.auth/me');
+    const data = await res.json();
+    const user = data.clientPrincipal;
+    if (user) {
+      const section = byId('auth-section');
+      const initials = (user.userDetails || 'U').substring(0, 2).toUpperCase();
+      section.innerHTML = `
+        <div class="user-info">
+          <div class="user-avatar">${initials}</div>
+          <span class="user-name">${user.userDetails || 'User'}</span>
+        </div>
+        <a href="/.auth/logout?post_logout_redirect_uri=/" class="logout-btn">Sign Out</a>
+      `;
+      return user;
+    }
+  } catch (e) {
+    // Not authenticated or running locally — that's fine
+  }
+  return null;
+};
+
 // --------------- HELPERS ---------------
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
@@ -506,7 +530,7 @@ const setupEventListeners = () => {
   });
 
   // --- Run with AI ---
-  byId('run-ai-btn').addEventListener('click', () => {
+  byId('run-ai-btn').addEventListener('click', async () => {
     const prompt = byId('prompt-input').value.trim();
     if (!prompt) {
       showToast('Please enter a prompt first.', 'error');
@@ -520,13 +544,35 @@ const setupEventListeners = () => {
     output.innerHTML = '<span class="placeholder-text">🤖 Processing your prompt...</span>';
 
     const task = byId('exercise-task').textContent;
-    setTimeout(() => {
+    
+    // Try real API first, fall back to mock
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, task })
+      });
+      
+      if (!res.ok) throw new Error('API error');
+      const data = await res.json();
+      
+      // Format the AI response with markdown-like rendering
+      const formatted = data.response
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n/g, '<br>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`(.*?)`/g, '<code>$1</code>');
+      output.innerHTML = `<h4>🤖 AI Response</h4><p>${formatted}</p>`;
+    } catch (err) {
+      // Fallback to mock response
       const response = generateMockResponse(task, prompt);
       output.innerHTML = response;
-      runBtn.disabled = false;
-      runBtn.classList.remove('loading');
-      runBtn.innerHTML = '<i class="fas fa-play"></i> Run with AI';
-    }, 1500);
+    }
+    
+    runBtn.disabled = false;
+    runBtn.classList.remove('loading');
+    runBtn.innerHTML = '<i class="fas fa-play"></i> Run with AI';
   });
 
   // --- Save ---
@@ -590,4 +636,5 @@ document.addEventListener('DOMContentLoaded', () => {
   loadProgress();
   renderDashboard();
   setupEventListeners();
+  checkAuth();
 });
