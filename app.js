@@ -621,14 +621,6 @@ const narration = {
   autoAdvance: true
 };
 
-// Persistent Hinglish cache in localStorage
-const getHinglishCache = () => {
-  try { return JSON.parse(localStorage.getItem('lms-hinglish-cache') || '{}'); } catch { return {}; }
-};
-const setHinglishCache = (cache) => {
-  localStorage.setItem('lms-hinglish-cache', JSON.stringify(cache));
-};
-
 const getSlideNarrationText = (slide) => {
   const tmp = document.createElement('div');
   let text = '';
@@ -642,32 +634,21 @@ const getSlideNarrationText = (slide) => {
 
 const translateToHinglish = async (text) => {
   const cacheKey = `${state.currentLessonId}-${state.currentSlide}`;
-  const cache = getHinglishCache();
-  if (cache[cacheKey]) return cache[cacheKey];
 
   try {
     const token = localStorage.getItem('lms_token') || '';
-    const res = await fetch('/api/chat', {
+    const res = await fetch('/api/hinglish', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
       body: JSON.stringify({
-        prompt: `Convert this educational text to Hinglish (Hindi written in Roman script mixed with English). Rules:
-- Keep ALL technical/tech keywords in English (AI, prompt, machine learning, API, chatbot, LLM, data, code, etc.)
-- Use simple Hindi (Roman script) for everything else so a 4th grader can follow
-- Keep it conversational and fun, like a cool teacher explaining to kids
-- Do NOT add any extra content, just convert what's given
-- Output ONLY the converted text, nothing else
-
-Text to convert:
-${text}`
+        lessonId: state.currentLessonId,
+        slideIndex: state.currentSlide,
+        text
       })
     });
     if (!res.ok) throw new Error('Translation failed');
     const data = await res.json();
-    const translated = data.response || text;
-    cache[cacheKey] = translated;
-    setHinglishCache(cache);
-    return translated;
+    return data.translation || text;
   } catch (err) {
     showToast('Hinglish translation failed, using English', 'error');
     return text;
