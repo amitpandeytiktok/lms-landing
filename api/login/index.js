@@ -54,10 +54,44 @@ module.exports = async function (context, req) {
 
     await tableRequest('PUT', `/users(PartitionKey='user',RowKey='${encodeURIComponent(email)}')`, updateEntity);
 
+    // Merge batch-based course access
+    let mergedAccess = user.courseAccess || '';
+    try {
+      // Ensure batchmembers table exists
+      await tableRequest('POST', '/Tables', { TableName: 'batchmembers' });
+      await tableRequest('POST', '/Tables', { TableName: 'batches' });
+
+      // Find batch memberships for this user
+      const membershipsResult = await tableRequest('GET', `/batchmembers()?$filter=RowKey eq '${encodeURIComponent(email)}'`);
+      const memberships = (membershipsResult.body && membershipsResult.body.value) || [];
+
+      if (memberships.length > 0) {
+        // Get all batches to check expiry and courses
+        const batchesResult = await tableRequest('GET', '/batches()');
+        const batches = (batchesResult.body && batchesResult.body.value) || [];
+        const batchMap = {};
+        batches.forEach(b => { batchMap[b.RowKey] = b; });
+
+        const now = new Date();
+        const accessSet = new Set(mergedAccess.split(',').map(s => s.trim()).filter(Boolean));
+
+        memberships.forEach(m => {
+          const batch = batchMap[m.PartitionKey];
+          if (batch && new Date(batch.expiresAt) > now) {
+            (batch.courses || '').split(',').map(s => s.trim()).filter(Boolean).forEach(c => accessSet.add(c));
+          }
+        });
+
+        mergedAccess = Array.from(accessSet).join(',');
+      }
+    } catch (batchErr) {
+      context.log.warn('Batch access merge skipped:', batchErr.message);
+    }
+
     context.res = {
       status: 200,
       headers: HEADERS,
-      body: { token, user: { name: user.name, email, courseAccess: user.courseAccess || '' } }
+      body: { token, user: { name: user.name, email, courseAccess: mergedAccess } }
     };
   } catch (err) {
     context.log.error('Login error:', err.message);

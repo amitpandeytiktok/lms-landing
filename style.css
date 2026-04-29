@@ -3057,3 +3057,250 @@ body:not(.app-mode) .admin-nav-btn {
     flex-direction: column;
   }
 }
+
+/* ============ ENROLLMENT & BATCH MANAGEMENT ============ */
+
+.enroll-form, .batch-create-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 16px;
+}
+
+.enroll-form .admin-input,
+.batch-create-form .admin-input {
+  flex: 1;
+  min-width: 180px;
+}
+
+.batch-date-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 180px;
+}
+
+.batch-date-field label {
+  color: rgba(255,255,255,0.6);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.batch-date-field input[type="date"] {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color-scheme: dark;
+}
+
+.enroll-credentials-card {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 12px;
+}
+
+.enroll-credentials-card h3 {
+  margin: 0 0 14px 0;
+  font-size: 1.05rem;
+  color: #10b981;
+}
+
+.cred-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 0.95rem;
+}
+
+.cred-label {
+  color: rgba(255,255,255,0.5);
+  min-width: 80px;
+  font-weight: 500;
+}
+
+.cred-value {
+  color: #fff;
+  background: rgba(255,255,255,0.06);
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.5px;
+}
+
+.copy-creds-btn {
+  margin-top: 14px;
+  background: linear-gradient(135deg, #6c3ce0, #06b6d4);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.copy-creds-btn:hover {
+  opacity: 0.85;
+}
+
+.batch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 16px;
+}
+
+.batch-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 18px;
+  transition: border-color 0.2s;
+}
+
+.batch-card:hover {
+  border-color: rgba(108, 60, 224, 0.3);
+}
+
+.batch-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.batch-card-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #fff;
+}
+
+.batch-status {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.batch-status-active {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.batch-status-expired {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.batch-card-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 14px;
+}
+
+.batch-card-info i {
+  margin-right: 4px;
+  color: #6c3ce0;
+}
+
+.batch-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.batch-toggle-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.7);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  transition: background 0.2s;
+}
+
+.batch-toggle-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.batch-add-member {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+}
+
+.batch-member-input {
+  flex: 1;
+  min-width: 140px;
+  padding: 6px 10px !important;
+  font-size: 0.85rem !important;
+}
+
+.batch-add-btn {
+  padding: 6px 12px !important;
+  font-size: 0.82rem !important;
+  white-space: nowrap;
+}
+
+.batch-members-list {
+  margin-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 10px;
+}
+
+.batch-members-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.batch-members-table th {
+  text-align: left;
+  padding: 6px 10px;
+  color: rgba(255,255,255,0.4);
+  font-weight: 500;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.batch-members-table td {
+  padding: 8px 10px;
+  color: rgba(255,255,255,0.75);
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.batch-remove-btn {
+  padding: 4px 8px !important;
+  font-size: 0.78rem !important;
+  min-width: auto !important;
+}
+
+@media (max-width: 600px) {
+  .batch-grid {
+    grid-template-columns: 1fr;
+  }
+  .enroll-form, .batch-create-form {
+    flex-direction: column;
+  }
+  .batch-add-member {
+    flex-direction: column;
+  }
+}
