@@ -815,6 +815,168 @@ body.app-mode {
   color: rgba(255,255,255,0.4);
 }
 
+/* Founder Section */
+.founder-section {
+  padding: 100px 40px;
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.founder-card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 24px;
+  padding: 48px 40px;
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: flex-start;
+  gap: 36px;
+  text-align: left;
+  margin-top: 48px;
+  box-shadow: 0 0 40px rgba(167,139,250,0.08);
+  transition: border-color 0.4s;
+}
+
+.founder-card:hover {
+  border-color: rgba(167,139,250,0.35);
+}
+
+.founder-avatar {
+  flex-shrink: 0;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a78bfa, #06b6d4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 38px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 2px;
+  box-shadow: 0 0 30px rgba(167,139,250,0.3);
+}
+
+.founder-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.founder-name-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 6px;
+}
+
+.founder-name-row h3 {
+  font-size: 24px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.linkedin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #0077b5;
+  color: #fff;
+  font-size: 16px;
+  text-decoration: none;
+  transition: background 0.3s, transform 0.3s;
+}
+
+.linkedin-btn:hover {
+  background: #005f8d;
+  transform: scale(1.1);
+}
+
+.founder-role {
+  font-size: 14px;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.founder-bio p {
+  color: rgba(255,255,255,0.75);
+  font-size: 15px;
+  line-height: 1.8;
+  margin-bottom: 14px;
+}
+
+.founder-bio p:last-child {
+  margin-bottom: 0;
+}
+
+/* Partnership Banner */
+.partnership-banner {
+  margin-top: 40px;
+  padding: 28px 36px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(167,139,250,0.1), rgba(6,182,212,0.08));
+  border: 1px solid rgba(167,139,250,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.partnership-icon {
+  font-size: 28px;
+  background: linear-gradient(135deg, #a78bfa, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  flex-shrink: 0;
+}
+
+.partnership-banner p {
+  color: rgba(255,255,255,0.72);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.partnership-banner strong {
+  color: #e2e8f0;
+}
+
+/* Founder section responsive */
+@media (max-width: 700px) {
+  .founder-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 36px 24px;
+    gap: 24px;
+  }
+
+  .founder-name-row {
+    justify-content: center;
+  }
+
+  .founder-avatar {
+    width: 90px;
+    height: 90px;
+    font-size: 30px;
+  }
+
+  .founder-section {
+    padding: 80px 20px;
+  }
+
+  .partnership-banner {
+    flex-direction: column;
+    padding: 24px 20px;
+    gap: 12px;
+  }
+}
+
 /* Final CTA */
 .final-cta {
   position: relative;
@@ -2096,158 +2258,6 @@ html {
   .courses-header h2 {
     margin-right: 0;
   }
-}
-
-/* ============================================
-   PRICE BADGE & BUY BUTTON
-   ============================================ */
-.price-badge {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: #10b981;
-  color: #fff;
-  font-weight: 700;
-  font-size: 1rem;
-  padding: 6px 14px;
-  border-radius: 20px;
-  z-index: 2;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
-}
-
-.buy-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, #6c3ce0, #a855f7);
-  color: #fff;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 12px;
-  transition: transform 0.2s, box-shadow 0.2s;
-  width: 100%;
-  justify-content: center;
-}
-
-.buy-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(108, 60, 224, 0.4);
-}
-
-/* ============================================
-   BUY VIEW
-   ============================================ */
-#buy-view {
-  max-width: 600px;
-  margin: 0 auto;
-  padding-top: 80px;
-}
-
-.buy-container {
-  padding: 40px;
-  text-align: center;
-}
-
-.buy-title {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #1a1a2e;
-  margin-bottom: 8px;
-}
-
-.buy-subtitle {
-  color: #666;
-  font-size: 1.05rem;
-  margin-bottom: 24px;
-}
-
-.buy-features {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 24px;
-  text-align: left;
-}
-
-.buy-feature {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  background: #f8f7ff;
-  border-radius: 10px;
-  font-size: 0.92rem;
-  color: #333;
-}
-
-.buy-feature i {
-  color: #6c3ce0;
-  font-size: 1rem;
-}
-
-.buy-price {
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: #10b981;
-  margin: 20px 0;
-}
-
-.buy-qr-section {
-  margin: 24px 0;
-}
-
-.buy-qr-section h3 {
-  color: #1a1a2e;
-  margin-bottom: 16px;
-  font-size: 1.1rem;
-}
-
-.qr-code-img {
-  max-width: 280px;
-  width: 100%;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  margin: 0 auto;
-  display: block;
-}
-
-.upi-id {
-  margin-top: 12px;
-  color: #555;
-  font-size: 0.95rem;
-  background: #f0f0f5;
-  display: inline-block;
-  padding: 8px 20px;
-  border-radius: 8px;
-}
-
-.payment-instructions {
-  text-align: left;
-  margin-top: 28px;
-  padding: 24px;
-  background: #f8f7ff;
-  border-radius: 12px;
-}
-
-.payment-instructions h3 {
-  color: #1a1a2e;
-  margin-bottom: 14px;
-  font-size: 1.05rem;
-}
-
-.payment-instructions ol {
-  padding-left: 20px;
-}
-
-.payment-instructions li {
-  color: #444;
-  margin-bottom: 10px;
-  line-height: 1.6;
-  font-size: 0.95rem;
 }
 
 /* ============================================

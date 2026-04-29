@@ -45,7 +45,7 @@
         <h1 class="hero-title">Master <span class="gradient-text">Artificial Intelligence</span><br>From Zero to AI Champion</h1>
         <p class="hero-subtitle">A hands-on course designed for students new to AI. Learn prompt engineering, build real projects, and practice with an interactive AI playground. No coding experience required.</p>
         <div class="hero-ctas">
-          <button class="cta-primary" onclick="showAuthModal('signup')"><i class="fas fa-rocket"></i> Get Started</button>
+          <button class="cta-primary" onclick="showAuthModal('login')"><i class="fas fa-rocket"></i> Sign In</button>
           <a href="#curriculum" class="cta-secondary"><i class="fas fa-play-circle"></i> View Curriculum</a>
         </div>
       </div>
@@ -130,6 +130,32 @@
       </div>
     </section>
 
+    <!-- Founder Story -->
+    <section class="founder-section">
+      <h2 class="section-title reveal">Meet Our <span class="gradient-text">Founder</span></h2>
+      <div class="founder-card reveal">
+        <div class="founder-avatar">ST</div>
+        <div class="founder-info">
+          <div class="founder-name-row">
+            <h3>Sakshi Tripathi</h3>
+            <a href="https://www.linkedin.com/in/sakshi-tripathi-22991414a/" target="_blank" rel="noopener noreferrer" class="linkedin-btn" aria-label="LinkedIn Profile">
+              <i class="fab fa-linkedin-in"></i>
+            </a>
+          </div>
+          <p class="founder-role">Software Engineer at Qualtrics · Founder, TechWave Global</p>
+          <div class="founder-bio">
+            <p>Sakshi Tripathi is a Software Engineer at Qualtrics and the founder of TechWave Global. With dual Master's degrees in Computer Science — an MS from Texas State University (where she received the Graduate Academic Excellence Award) and an Integrated M.Tech from Gautam Buddha University — Sakshi brings deep technical expertise to her mission of democratizing AI education.</p>
+            <p>Her journey spans building scalable systems at Amazon and Qualtrics, teaching 100+ students as an Assistant Professor at PSIT Kanpur, and ranking in the top percentiles nationally (GATE AIR 1642, UGC NET/JRF 99.3%ile). It was this unique blend of industry experience and passion for teaching that led her to found TechWave Global in October 2024.</p>
+            <p>Her mission: to make Tier 2 and Tier 3 Indian cities AI-literate and fluent through an innovative offline/online hybrid model — bringing world-class AI education to students who need it most.</p>
+          </div>
+        </div>
+      </div>
+      <div class="partnership-banner reveal">
+        <i class="fas fa-handshake partnership-icon"></i>
+        <p>Techwave Global AI Academy is a Joint Venture of <strong>TechWave Global LLC</strong> (Washington, USA) &amp; <strong>Indrashikha Educational (OPC) Pvt Ltd</strong></p>
+      </div>
+    </section>
+
     <!-- Final CTA -->
     <section class="final-cta">
       <div class="cta-bg">
@@ -138,8 +164,8 @@
       </div>
       <div class="cta-content">
         <h2>Ready to Start Your <span class="gradient-text">AI Journey</span>?</h2>
-        <p>Create an account, enroll in the course, and earn your AI Champion Certificate.</p>
-        <button class="cta-primary cta-large" onclick="showAuthModal('signup')"><i class="fas fa-rocket"></i> Create Account</button>
+        <p>Sign in to access your courses and earn your AI Champion Certificate.</p>
+        <button class="cta-primary cta-large" onclick="showAuthModal('login')"><i class="fas fa-rocket"></i> Sign In</button>
       </div>
     </section>
 
@@ -181,35 +207,7 @@
   </div>
 
   <!-- ==================== BUY VIEW ==================== -->
-  <div id="buy-view" style="display:none">
-    <button class="back-btn" onclick="navigateToDashboard()"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
-    <div class="buy-container card">
-      <h2 class="buy-title">🚀 AI Beginner Course</h2>
-      <p class="buy-subtitle">Everything you need to master AI from scratch</p>
-      <div class="buy-features">
-        <div class="buy-feature"><i class="fas fa-book-open"></i> 51 Hands-on Lessons</div>
-        <div class="buy-feature"><i class="fas fa-calendar-week"></i> 4 Weekly Tracks</div>
-        <div class="buy-feature"><i class="fas fa-tasks"></i> 51 Practical Exercises</div>
-        <div class="buy-feature"><i class="fas fa-robot"></i> AI Playground Access</div>
-        <div class="buy-feature"><i class="fas fa-certificate"></i> AI Champion Certificate</div>
-      </div>
-      <div class="buy-price">₹500</div>
-      <div class="buy-qr-section">
-        <h3>Pay via UPI</h3>
-        <img src="upi-qr.jpg" alt="UPI QR Code" class="qr-code-img">
-        <p class="upi-id">UPI ID: <strong>amitansu1995@icici</strong></p>
-      </div>
-      <div class="payment-instructions">
-        <h3>How to get access:</h3>
-        <ol>
-          <li>Scan the QR code with any UPI app (GPay, PhonePe, Paytm, etc.)</li>
-          <li>Pay <strong>₹500</strong></li>
-          <li>Send payment screenshot to <strong>officialtechwaveteam@gmail.com</strong></li>
-          <li>You'll get access within 24 hours</li>
-        </ol>
-      </div>
-    </div>
-  </div>
+
 
   <!-- ==================== COURSE VIEW ==================== -->
   <div id="course-view" style="display:none">
@@ -361,8 +359,7 @@
         </button>
       </form>
       <div class="auth-switch">
-        <span id="auth-switch-text">Don't have an account?</span>
-        <button id="auth-switch-btn" onclick="toggleAuthMode()">Sign Up</button>
+        <span>Need an account? Contact your administrator.</span>
       </div>
     </div>
   </div>
