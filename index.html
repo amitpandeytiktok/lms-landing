@@ -318,6 +318,34 @@
       </div>
     </div>
 
+    <!-- Student Enrollment -->
+    <div class="admin-container card">
+      <h2 class="admin-title">🎓 Enroll Student</h2>
+      <div class="enroll-form">
+        <input type="text" id="enroll-name" placeholder="Student Name" class="admin-input">
+        <input type="email" id="enroll-email" placeholder="Student Email" class="admin-input">
+        <button class="grant-btn" onclick="adminEnrollStudent()"><i class="fas fa-user-plus"></i> Create Student Account</button>
+      </div>
+      <div id="enroll-result" style="display:none"></div>
+    </div>
+
+    <!-- Batch Management -->
+    <div class="admin-container card">
+      <h2 class="admin-title">📦 Batch Management</h2>
+      <div class="batch-create-form">
+        <input type="text" id="batch-name" placeholder="Batch Name" class="admin-input">
+        <input type="text" id="batch-courses" placeholder="Courses (comma-separated, e.g. ai-beginner)" class="admin-input" value="ai-beginner">
+        <div class="batch-date-field">
+          <label for="batch-expiry">Expiry Date:</label>
+          <input type="date" id="batch-expiry" class="admin-input">
+        </div>
+        <button class="grant-btn" onclick="adminCreateBatch()"><i class="fas fa-plus-circle"></i> Create Batch</button>
+      </div>
+      <div id="batch-list" style="margin-top:20px;">
+        <p style="text-align:center;padding:20px;color:rgba(255,255,255,0.5);">Loading batches...</p>
+      </div>
+    </div>
+
     <!-- User Management -->
     <div class="admin-container card">
       <h2 class="admin-title">🔧 User Management</h2>
@@ -326,6 +354,22 @@
         <button class="grant-btn" onclick="adminGrantAccess()">Grant Access</button>
       </div>
       <div id="admin-users-list"></div>
+    </div>
+  </div>
+
+  <!-- ==================== COMMUNITY VIEW ==================== -->
+  <div id="community-view" style="display:none">
+    <button class="back-btn" onclick="navigateToDashboard()"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
+    <div class="community-container">
+      <div class="community-header">
+        <h2><i class="fas fa-comments"></i> Community Discussions</h2>
+        <div class="community-course-tabs">
+          <button class="community-tab active" data-course="ai-beginner">AI Beginner Course</button>
+        </div>
+      </div>
+      <div id="community-content" class="community-content">
+        <!-- Thread list or thread detail rendered here -->
+      </div>
     </div>
   </div>
 

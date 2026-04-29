@@ -14,7 +14,7 @@ const state = {
 };
 
 // --------------- AUTH ---------------
-let authMode = 'login'; // 'login' or 'signup'
+let authMode = 'login';
 
 // --------------- ANALYTICS TRACKING ---------------
 const trackEvent = (event, data = {}) => {
@@ -24,7 +24,6 @@ const trackEvent = (event, data = {}) => {
     const headers = { type: 'application/json' };
     const blob = new Blob([payload], headers);
     if (navigator.sendBeacon) {
-      // sendBeacon can't set custom headers, so we use fetch for token
       if (token) {
         fetch('/api/trackevent', {
           method: 'POST',
@@ -47,15 +46,11 @@ const trackEvent = (event, data = {}) => {
 };
 
 const showAuthModal = (mode) => {
-  authMode = mode || 'login';
+  authMode = 'login';
   const modal = byId('auth-modal');
   modal.style.display = 'flex';
   updateAuthModalUI();
-  // Focus first visible input
-  setTimeout(() => {
-    if (authMode === 'signup') byId('auth-name').focus();
-    else byId('auth-email').focus();
-  }, 100);
+  setTimeout(() => byId('auth-email').focus(), 100);
 };
 
 const hideAuthModal = () => {
@@ -64,22 +59,13 @@ const hideAuthModal = () => {
   byId('auth-form').reset();
 };
 
-const toggleAuthMode = () => {
-  authMode = authMode === 'login' ? 'signup' : 'login';
-  updateAuthModalUI();
-};
-
 const updateAuthModalUI = () => {
-  const isLogin = authMode === 'login';
-  byId('auth-modal-title').textContent = isLogin ? 'Welcome Back' : 'Create Account';
-  byId('auth-modal-subtitle').textContent = isLogin ? 'Sign in to continue your AI journey' : 'Join thousands learning AI today';
-  byId('name-field').style.display = isLogin ? 'none' : 'block';
-  byId('auth-submit-text').textContent = isLogin ? 'Sign In' : 'Create Account';
-  byId('auth-switch-text').textContent = isLogin ? "Don't have an account?" : 'Already have an account?';
-  byId('auth-switch-btn').textContent = isLogin ? 'Sign Up' : 'Sign In';
+  byId('auth-modal-title').textContent = 'Welcome Back';
+  byId('auth-modal-subtitle').textContent = 'Sign in to continue your AI journey';
+  byId('name-field').style.display = 'none';
+  byId('auth-submit-text').textContent = 'Sign In';
   byId('auth-error').style.display = 'none';
-  if (!isLogin) byId('auth-name').setAttribute('required', '');
-  else byId('auth-name').removeAttribute('required');
+  byId('auth-name').removeAttribute('required');
 };
 
 const showAuthError = (msg) => {
@@ -103,8 +89,8 @@ const handleAuth = async (e) => {
   const password = byId('auth-password').value;
   const name = byId('auth-name').value.trim();
   
-  const endpoint = authMode === 'login' ? '/api/login' : '/api/signup';
-  const body = authMode === 'login' ? { email, password } : { name, email, password };
+  const endpoint = '/api/login';
+  const body = { email, password };
   
   try {
     const res = await fetch(endpoint, {
@@ -126,8 +112,8 @@ const handleAuth = async (e) => {
     
     hideAuthModal();
     showAppView(data.user);
-    trackEvent(authMode === 'signup' ? 'signup' : 'login', { email: data.user.email });
-    showToast(`Welcome${authMode === 'signup' ? '' : ' back'}, ${data.user.name}! 🎉`, 'success');
+    trackEvent('login', { email: data.user.email });
+    showToast(`Welcome back, ${data.user.name}! 🎉`, 'success');
   } catch (err) {
     showAuthError('Network error. Please check your connection.');
   } finally {
@@ -174,8 +160,8 @@ const logout = () => {
   byId('dashboard-view').style.display = 'none';
   byId('course-view').style.display = 'none';
   byId('course-detail-view').style.display = 'none';
-  byId('buy-view').style.display = 'none';
   byId('admin-view').style.display = 'none';
+  byId('community-view').style.display = 'none';
   state.currentUser = null;
   const landing = byId('landing-view');
   if (landing) landing.style.display = '';
@@ -212,6 +198,13 @@ const showAppView = (user) => {
     </div>
     <button class="logout-btn" onclick="logout()">Sign Out</button>
   `;
+
+  // Community button for all logged-in users
+  const communityBtn = document.createElement('button');
+  communityBtn.className = 'community-nav-btn';
+  communityBtn.innerHTML = '<i class="fas fa-comments"></i> Community';
+  communityBtn.onclick = navigateToCommunity;
+  section.appendChild(communityBtn);
 
   // Show admin button if admin user
   if (user.email === 'officialtechwaveteam@gmail.com') {
@@ -356,7 +349,6 @@ const renderDashboard = () => {
     <div class="course-card" data-course="ai-beginner">
       <div class="card-image" style="background:linear-gradient(135deg, #1a0533 0%, #2d1560 30%, #6c3ce0 65%, #a855f7 100%)">
         <span class="card-emoji">🤖</span>
-        <span class="price-badge">₹500</span>
       </div>
       <div class="card-info">
         <div class="card-week-title">AI Beginner Course</div>
@@ -370,7 +362,6 @@ const renderDashboard = () => {
           <span><i class="fas fa-tasks"></i> ${getCourseTotalTasks()} tasks</span>
           <span><i class="fas fa-calendar-week"></i> ${COURSE_DATA.weeks.length} weeks</span>
         </div>
-        <button class="buy-btn" onclick="event.stopPropagation(); navigateToBuyPage()"><i class="fas fa-shopping-cart"></i> Buy Now</button>
       </div>
     </div>`;
 };
@@ -405,17 +396,16 @@ const renderCourseDetail = () => {
 };
 
 const hideAllViews = () => {
-  ['dashboard-view', 'course-detail-view', 'course-view', 'buy-view', 'admin-view'].forEach(id => {
+  ['dashboard-view', 'course-detail-view', 'course-view', 'admin-view', 'community-view'].forEach(id => {
     const el = byId(id);
     if (el) el.style.display = 'none';
   });
 };
 
 const navigateToCourseDetail = () => {
-  // Check if user has access
   const access = (state.currentUser && state.currentUser.courseAccess) || '';
   if (!access.split(',').map(s => s.trim()).includes('ai-beginner')) {
-    navigateToBuyPage();
+    showToast('You do not have access to this course. Please contact your administrator.', 'error');
     return;
   }
   state.currentView = 'course-detail';
@@ -459,19 +449,13 @@ const navigateHome = () => {
   }
 };
 
-const navigateToBuyPage = () => {
-  state.currentView = 'buy';
-  hideAllViews();
-  byId('buy-view').style.display = 'block';
-  trackEvent('buy_page_view');
-};
-
 const navigateToAdmin = () => {
   state.currentView = 'admin';
   hideAllViews();
   byId('admin-view').style.display = 'block';
   renderAdminView();
   loadAnalytics();
+  loadBatches();
 };
 
 const renderAdminView = async () => {
@@ -549,6 +533,206 @@ const adminRevokeAccess = async (email) => {
   }
 };
 
+// --------------- ENROLLMENT & BATCH MANAGEMENT ---------------
+
+const generatePassword = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let pw = '';
+  for (let i = 0; i < 8; i++) pw += chars.charAt(Math.floor(Math.random() * chars.length));
+  return pw;
+};
+
+const adminEnrollStudent = async () => {
+  const name = byId('enroll-name').value.trim();
+  const email = byId('enroll-email').value.trim();
+  if (!name || !email) { showToast('Please enter name and email', 'error'); return; }
+  const password = generatePassword();
+  try {
+    const token = localStorage.getItem('lms_token');
+    const res = await fetch('/api/enrollstudent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
+      body: JSON.stringify({ name, email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.error || 'Failed to enroll student', 'error'); return; }
+    byId('enroll-name').value = '';
+    byId('enroll-email').value = '';
+    const resultEl = byId('enroll-result');
+    resultEl.style.display = 'block';
+    resultEl.innerHTML = `
+      <div class="enroll-credentials-card">
+        <h3><i class="fas fa-check-circle" style="color:#10b981"></i> Student Account Created</h3>
+        <div class="cred-row"><span class="cred-label">Email:</span> <span class="cred-value" id="cred-email">${email}</span></div>
+        <div class="cred-row"><span class="cred-label">Password:</span> <span class="cred-value" id="cred-password">${password}</span></div>
+        <button class="copy-creds-btn" onclick="copyCredentials('${email}', '${password}')"><i class="fas fa-copy"></i> Copy Credentials</button>
+      </div>`;
+    showToast('Student enrolled successfully!', 'success');
+    renderAdminView();
+  } catch (err) {
+    showToast('Failed to enroll student', 'error');
+  }
+};
+
+const copyCredentials = (email, password) => {
+  const text = `Email: ${email}\nPassword: ${password}`;
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('Credentials copied to clipboard!', 'success');
+  }).catch(() => {
+    showToast('Failed to copy', 'error');
+  });
+};
+
+const adminCreateBatch = async () => {
+  const name = byId('batch-name').value.trim();
+  const courses = byId('batch-courses').value.trim();
+  const expiresAt = byId('batch-expiry').value;
+  if (!name || !courses || !expiresAt) { showToast('Please fill in all batch fields', 'error'); return; }
+  try {
+    const token = localStorage.getItem('lms_token');
+    const res = await fetch('/api/createbatch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
+      body: JSON.stringify({ name, courses, expiresAt: new Date(expiresAt).toISOString() })
+    });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.error || 'Failed to create batch', 'error'); return; }
+    byId('batch-name').value = '';
+    byId('batch-expiry').value = '';
+    showToast('Batch created successfully!', 'success');
+    loadBatches();
+  } catch (err) {
+    showToast('Failed to create batch', 'error');
+  }
+};
+
+const loadBatches = async () => {
+  const container = byId('batch-list');
+  if (!container) return;
+  try {
+    const token = localStorage.getItem('lms_token');
+    const res = await fetch('/api/listbatches', { headers: { 'X-Auth-Token': token } });
+    const data = await res.json();
+    const batches = data.batches || [];
+    if (batches.length === 0) {
+      container.innerHTML = '<p style="text-align:center;padding:20px;color:rgba(255,255,255,0.5);">No batches created yet.</p>';
+      return;
+    }
+    let html = '<div class="batch-grid">';
+    batches.forEach(b => {
+      const isExpired = b.status === 'expired';
+      const statusClass = isExpired ? 'batch-status-expired' : 'batch-status-active';
+      const statusLabel = isExpired ? 'Expired' : 'Active';
+      html += `
+        <div class="batch-card" id="batch-card-${b.id}">
+          <div class="batch-card-header">
+            <h3>${b.name}</h3>
+            <span class="batch-status ${statusClass}">${statusLabel}</span>
+          </div>
+          <div class="batch-card-info">
+            <span><i class="fas fa-book"></i> ${b.courses}</span>
+            <span><i class="fas fa-calendar"></i> Expires: ${new Date(b.expiresAt).toLocaleDateString()}</span>
+            <span><i class="fas fa-users"></i> ${b.memberCount} member${b.memberCount !== 1 ? 's' : ''}</span>
+          </div>
+          <div class="batch-card-actions">
+            <button class="batch-toggle-btn" onclick="toggleBatchMembers('${b.id}')"><i class="fas fa-chevron-down"></i> Members</button>
+            <div class="batch-add-member">
+              <input type="email" id="add-member-${b.id}" placeholder="Student email" class="admin-input batch-member-input">
+              <button class="grant-btn batch-add-btn" onclick="addBatchMember('${b.id}')"><i class="fas fa-plus"></i> Add</button>
+            </div>
+          </div>
+          <div class="batch-members-list" id="batch-members-${b.id}" style="display:none"></div>
+        </div>`;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+  } catch (err) {
+    container.innerHTML = '<p style="color:red;text-align:center;padding:20px;">Error loading batches.</p>';
+  }
+};
+
+const toggleBatchMembers = async (batchId) => {
+  const el = byId(`batch-members-${batchId}`);
+  if (!el) return;
+  if (el.style.display === 'none') {
+    el.style.display = 'block';
+    el.innerHTML = '<p style="padding:10px;color:rgba(255,255,255,0.5);">Loading...</p>';
+    try {
+      const token = localStorage.getItem('lms_token');
+      const res = await fetch(`/api/batchmembers?batchId=${encodeURIComponent(batchId)}`, { headers: { 'X-Auth-Token': token } });
+      const data = await res.json();
+      const members = data.members || [];
+      if (members.length === 0) {
+        el.innerHTML = '<p style="padding:10px;color:rgba(255,255,255,0.5);">No members in this batch.</p>';
+        return;
+      }
+      let html = '<table class="batch-members-table"><thead><tr><th>Name</th><th>Email</th><th>Added</th><th></th></tr></thead><tbody>';
+      members.forEach(m => {
+        html += `<tr>
+          <td>${m.studentName || '—'}</td>
+          <td>${m.email}</td>
+          <td>${m.addedAt ? new Date(m.addedAt).toLocaleDateString() : '—'}</td>
+          <td><button class="revoke-btn batch-remove-btn" onclick="removeBatchMember('${batchId}','${m.email}')"><i class="fas fa-times"></i></button></td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      el.innerHTML = html;
+    } catch (err) {
+      el.innerHTML = '<p style="color:red;padding:10px;">Error loading members.</p>';
+    }
+  } else {
+    el.style.display = 'none';
+  }
+};
+
+const addBatchMember = async (batchId) => {
+  const input = byId(`add-member-${batchId}`);
+  const email = input ? input.value.trim() : '';
+  if (!email) { showToast('Please enter a student email', 'error'); return; }
+  try {
+    const token = localStorage.getItem('lms_token');
+    const res = await fetch('/api/batchmembers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
+      body: JSON.stringify({ batchId, email, studentName: '' })
+    });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.error || 'Failed to add member', 'error'); return; }
+    if (input) input.value = '';
+    showToast(`${email} added to batch`, 'success');
+    // Refresh members list if open
+    const membersEl = byId(`batch-members-${batchId}`);
+    if (membersEl && membersEl.style.display !== 'none') {
+      membersEl.style.display = 'none';
+      toggleBatchMembers(batchId);
+    }
+    loadBatches();
+  } catch (err) {
+    showToast('Failed to add member', 'error');
+  }
+};
+
+const removeBatchMember = async (batchId, email) => {
+  try {
+    const token = localStorage.getItem('lms_token');
+    const res = await fetch('/api/batchmembers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
+      body: JSON.stringify({ action: 'remove', batchId, email })
+    });
+    if (!res.ok) throw new Error('Failed');
+    showToast(`${email} removed from batch`, 'success');
+    const membersEl = byId(`batch-members-${batchId}`);
+    if (membersEl && membersEl.style.display !== 'none') {
+      membersEl.style.display = 'none';
+      toggleBatchMembers(batchId);
+    }
+    loadBatches();
+  } catch (err) {
+    showToast('Failed to remove member', 'error');
+  }
+};
+
 // --------------- ANALYTICS DASHBOARD ---------------
 const loadAnalytics = async () => {
   const summaryEl = byId('analytics-summary');
@@ -585,7 +769,6 @@ const renderAnalyticsSummary = (s) => {
     { label: 'Course Starts', value: s.totalCourseStarts, icon: 'fa-play-circle', color: '#f59e0b' },
     { label: 'Lesson Views', value: s.totalLessonStarts, icon: 'fa-book-open', color: '#ec4899' },
     { label: 'Narrations', value: s.totalNarrationPlays, icon: 'fa-headphones', color: '#8b5cf6' },
-    { label: 'Buy Page', value: s.totalBuyPageViews, icon: 'fa-shopping-cart', color: '#ef4444' },
     { label: 'Unique Visitors', value: s.uniqueVisitors, icon: 'fa-users', color: '#06b6d4' },
     { label: 'Registered Users', value: s.totalRegisteredUsers, icon: 'fa-user-check', color: '#14b8a6' },
     { label: 'With Access', value: s.usersWithAccess, icon: 'fa-unlock', color: '#a855f7' }
@@ -631,7 +814,7 @@ const renderRecentActivity = (events) => {
   const badgeColors = {
     page_view: '#6c3ce0', signup: '#10b981', login: '#3b82f6',
     course_start: '#f59e0b', lesson_start: '#ec4899',
-    narration_play: '#8b5cf6', buy_page_view: '#ef4444'
+    narration_play: '#8b5cf6'
   };
   el.innerHTML = events.map(ev => {
     const color = badgeColors[ev.event] || '#666';
@@ -1102,7 +1285,7 @@ const setupEventListeners = () => {
   // --- Dashboard: Course card click → course detail ---
   byId('courses-grid').addEventListener('click', (e) => {
     const card = e.target.closest('.course-card');
-    if (card && !e.target.closest('.buy-btn')) navigateToCourseDetail();
+    if (card) navigateToCourseDetail();
   });
 
   // --- Course Detail: Week card click → lesson view ---
@@ -1282,6 +1465,214 @@ const setupEventListeners = () => {
       navigateToDashboard();
     }
   });
+};
+
+// ===============================================
+//  COMMUNITY DISCUSSIONS
+// ===============================================
+let communityCurrentCourse = 'ai-beginner';
+
+const navigateToCommunity = () => {
+  state.currentView = 'community';
+  hideAllViews();
+  byId('community-view').style.display = 'block';
+  loadDiscussions(communityCurrentCourse);
+};
+
+const timeAgo = (dateStr) => {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + ' min ago';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h ago';
+  const days = Math.floor(hrs / 24);
+  if (days < 30) return days + 'd ago';
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
+
+const formatDate = (dateStr) => {
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
+
+const loadDiscussions = async (courseId) => {
+  const container = byId('community-content');
+  container.innerHTML = '<p style="text-align:center;padding:40px;color:#aaa;">Loading discussions...</p>';
+  try {
+    const token = localStorage.getItem('lms_token');
+    const res = await fetch('/api/discussions?courseId=' + encodeURIComponent(courseId), {
+      headers: { 'X-Auth-Token': token }
+    });
+    if (!res.ok) throw new Error('Failed to load discussions');
+    const threads = await res.json();
+    renderThreadList(threads, courseId);
+  } catch (err) {
+    container.innerHTML = '<p style="text-align:center;padding:40px;color:#f87171;">Failed to load discussions. Please try again.</p>';
+  }
+};
+
+const renderThreadList = (threads, courseId) => {
+  const container = byId('community-content');
+  let html = `
+    <button class="community-new-btn" onclick="showNewDiscussionForm('${courseId}')">
+      <i class="fas fa-plus"></i> New Discussion
+    </button>`;
+
+  if (threads.length === 0) {
+    html += '<div class="community-empty"><i class="fas fa-comments" style="font-size:48px;opacity:0.3;margin-bottom:16px;display:block;"></i><p>No discussions yet. Start the conversation!</p></div>';
+  } else {
+    html += '<div class="thread-list">';
+    threads.forEach(t => {
+      html += `
+        <div class="thread-card" onclick="viewThread('${t.threadId}', '${courseId}')">
+          <div class="thread-icon">💬</div>
+          <div class="thread-info">
+            <h3 class="thread-title">${escapeHtml(t.title)}</h3>
+            <p class="thread-meta">
+              Posted by <span class="thread-author">${escapeHtml(t.authorName)}</span> • ${timeAgo(t.createdAt)} • <span class="thread-reply-count">${t.replyCount} ${t.replyCount === 1 ? 'reply' : 'replies'}</span>
+            </p>
+          </div>
+          <div class="thread-activity">
+            <span class="thread-badge">${t.replyCount}</span>
+          </div>
+        </div>`;
+    });
+    html += '</div>';
+  }
+  container.innerHTML = html;
+};
+
+const escapeHtml = (str) => {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+};
+
+const showNewDiscussionForm = (courseId) => {
+  const container = byId('community-content');
+  container.innerHTML = `
+    <div class="community-form-card">
+      <h3><i class="fas fa-pen"></i> Start a New Discussion</h3>
+      <div class="community-field">
+        <label>Title</label>
+        <input type="text" id="new-thread-title" class="community-input" placeholder="What's on your mind?" maxlength="200">
+      </div>
+      <div class="community-field">
+        <label>Body</label>
+        <textarea id="new-thread-body" class="community-textarea" placeholder="Share your thoughts, questions, or ideas..." rows="6"></textarea>
+      </div>
+      <div class="community-form-actions">
+        <button class="community-cancel-btn" onclick="loadDiscussions('${courseId}')">Cancel</button>
+        <button class="community-submit-btn" onclick="createDiscussion('${courseId}')">
+          <i class="fas fa-paper-plane"></i> Post Discussion
+        </button>
+      </div>
+    </div>`;
+};
+
+const createDiscussion = async (courseId) => {
+  const title = byId('new-thread-title').value.trim();
+  const body = byId('new-thread-body').value.trim();
+  if (!title || !body) {
+    showToast('Please fill in both title and body.', 'error');
+    return;
+  }
+  try {
+    const token = localStorage.getItem('lms_token');
+    const res = await fetch('/api/discussions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
+      body: JSON.stringify({ courseId, title, body })
+    });
+    if (!res.ok) throw new Error('Failed to create discussion');
+    showToast('Discussion posted!', 'success');
+    loadDiscussions(courseId);
+  } catch (err) {
+    showToast('Failed to post discussion. Please try again.', 'error');
+  }
+};
+
+const viewThread = async (threadId, courseId) => {
+  const container = byId('community-content');
+  container.innerHTML = '<p style="text-align:center;padding:40px;color:#aaa;">Loading thread...</p>';
+  try {
+    const token = localStorage.getItem('lms_token');
+    const [threadsRes, repliesRes] = await Promise.all([
+      fetch('/api/discussions?courseId=' + encodeURIComponent(courseId), { headers: { 'X-Auth-Token': token } }),
+      fetch('/api/replies?threadId=' + encodeURIComponent(threadId), { headers: { 'X-Auth-Token': token } })
+    ]);
+    if (!threadsRes.ok || !repliesRes.ok) throw new Error('Failed to load thread');
+    const threads = await threadsRes.json();
+    const replies = await repliesRes.json();
+    const thread = threads.find(t => t.threadId === threadId);
+    if (!thread) throw new Error('Thread not found');
+    renderThreadDetail(thread, replies, courseId);
+  } catch (err) {
+    container.innerHTML = '<p style="text-align:center;padding:40px;color:#f87171;">Failed to load thread.</p>';
+  }
+};
+
+const renderThreadDetail = (thread, replies, courseId) => {
+  const container = byId('community-content');
+  let html = `
+    <button class="community-back-btn" onclick="loadDiscussions('${courseId}')">
+      <i class="fas fa-arrow-left"></i> Back to Discussions
+    </button>
+    <div class="thread-detail-card">
+      <h2 class="thread-detail-title">${escapeHtml(thread.title)}</h2>
+      <p class="thread-detail-meta">
+        Posted by <span class="thread-author">${escapeHtml(thread.authorName)}</span> • ${formatDate(thread.createdAt)}
+      </p>
+      <div class="thread-detail-body">${escapeHtml(thread.body).replace(/\n/g, '<br>')}</div>
+    </div>
+    <div class="thread-replies-section">
+      <h3 class="replies-heading">Replies (${replies.length})</h3>`;
+
+  if (replies.length === 0) {
+    html += '<p class="replies-empty">No replies yet. Be the first to respond!</p>';
+  } else {
+    replies.forEach(r => {
+      html += `
+        <div class="reply-card">
+          <div class="reply-header">
+            <span class="reply-author">${escapeHtml(r.authorName)}</span>
+            <span class="reply-date">${timeAgo(r.createdAt)}</span>
+          </div>
+          <div class="reply-body">${escapeHtml(r.body).replace(/\n/g, '<br>')}</div>
+        </div>`;
+    });
+  }
+
+  html += `
+      <div class="reply-form">
+        <textarea id="reply-body" class="community-textarea" placeholder="Write your reply..." rows="3"></textarea>
+        <button class="community-submit-btn" onclick="postReply('${thread.threadId}', '${courseId}')">
+          <i class="fas fa-reply"></i> Post Reply
+        </button>
+      </div>
+    </div>`;
+  container.innerHTML = html;
+};
+
+const postReply = async (threadId, courseId) => {
+  const body = byId('reply-body').value.trim();
+  if (!body) {
+    showToast('Please write a reply.', 'error');
+    return;
+  }
+  try {
+    const token = localStorage.getItem('lms_token');
+    const res = await fetch('/api/replies', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
+      body: JSON.stringify({ threadId, courseId, body })
+    });
+    if (!res.ok) throw new Error('Failed to post reply');
+    showToast('Reply posted!', 'success');
+    viewThread(threadId, courseId);
+  } catch (err) {
+    showToast('Failed to post reply. Please try again.', 'error');
+  }
 };
 
 // ===============================================

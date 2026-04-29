@@ -39,6 +39,30 @@
     {
       "route": "/api/analytics",
       "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/discussions",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/replies",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/enrollstudent",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/createbatch",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/listbatches",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/batchmembers",
+      "allowedRoles": ["anonymous"]
     }
   ],
   "navigationFallback": {
