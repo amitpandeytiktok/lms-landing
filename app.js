@@ -1039,7 +1039,7 @@ const addBatchMember = async (batchId) => {
     const data = await res.json();
     if (!res.ok) { showToast(data.error || 'Failed to add member', 'error'); return; }
     if (input) input.value = '';
-    showToast(`${email} added to batch`, 'success');
+    showToast(`${identifier} added to batch`, 'success');
     // Refresh members list if open
     const membersEl = byId(`batch-members-${batchId}`);
     if (membersEl && membersEl.style.display !== 'none') {

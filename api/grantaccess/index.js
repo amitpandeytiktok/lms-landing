@@ -53,6 +53,8 @@ module.exports = async function (context, req) {
       PartitionKey: 'user',
       RowKey: email,
       name: user.name,
+      email: user.email || '',
+      phone: user.phone || '',
       salt: user.salt,
       passwordHash: user.passwordHash,
       token: user.token,

@@ -31,7 +31,9 @@ module.exports = async function (context, req) {
 
     const users = (allUsers.body.value || []).map(u => ({
       name: u.name || '',
-      email: u.RowKey,
+      email: u.email || (u.RowKey && !u.RowKey.startsWith('phone:') ? u.RowKey : ''),
+      phone: u.phone || (u.RowKey && u.RowKey.startsWith('phone:') ? u.RowKey.slice(6) : ''),
+      rowKey: u.RowKey,
       courseAccess: u.courseAccess || ''
     }));
 
