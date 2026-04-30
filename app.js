@@ -46,11 +46,11 @@ const trackEvent = (event, data = {}) => {
 };
 
 const showAuthModal = (mode) => {
-  authMode = 'login';
+  authMode = mode || 'login';
   const modal = byId('auth-modal');
   modal.style.display = 'flex';
   updateAuthModalUI();
-  setTimeout(() => byId('auth-email').focus(), 100);
+  setTimeout(() => byId(authMode === 'signup' ? 'auth-name' : 'auth-email').focus(), 100);
 };
 
 const hideAuthModal = () => {
@@ -60,12 +60,31 @@ const hideAuthModal = () => {
 };
 
 const updateAuthModalUI = () => {
-  byId('auth-modal-title').textContent = 'Welcome Back';
-  byId('auth-modal-subtitle').textContent = 'Sign in to continue your AI journey';
-  byId('name-field').style.display = 'none';
-  byId('auth-submit-text').textContent = 'Sign In';
+  const isSignup = authMode === 'signup';
+  byId('auth-modal-title').textContent = isSignup ? 'Create Account' : 'Welcome Back';
+  byId('auth-modal-subtitle').textContent = isSignup ? 'Join Techwave Global AI Academy' : 'Sign in to continue your AI journey';
+  byId('name-field').style.display = isSignup ? '' : 'none';
+  byId('phone-field').style.display = isSignup ? '' : 'none';
+  byId('auth-submit-text').textContent = isSignup ? 'Create Account' : 'Sign In';
   byId('auth-error').style.display = 'none';
-  byId('auth-name').removeAttribute('required');
+  byId('auth-switch').innerHTML = isSignup
+    ? '<span>Already have an account? <a href="#" onclick="toggleAuthMode(event)">Sign In</a></span>'
+    : '<span>Don\'t have an account? <a href="#" onclick="toggleAuthMode(event)">Sign Up</a></span>';
+
+  if (isSignup) {
+    byId('auth-name').setAttribute('required', '');
+    byId('auth-email').removeAttribute('required');
+    byId('auth-phone').removeAttribute('required');
+  } else {
+    byId('auth-name').removeAttribute('required');
+    byId('auth-email').setAttribute('required', '');
+  }
+};
+
+const toggleAuthMode = (e) => {
+  if (e) e.preventDefault();
+  authMode = authMode === 'login' ? 'signup' : 'login';
+  updateAuthModalUI();
 };
 
 const showAuthError = (msg) => {
@@ -88,9 +107,29 @@ const handleAuth = async (e) => {
   const email = byId('auth-email').value.trim();
   const password = byId('auth-password').value;
   const name = byId('auth-name').value.trim();
+  const phone = byId('auth-phone') ? byId('auth-phone').value.trim() : '';
   
-  const endpoint = '/api/login';
-  const body = { email, password };
+  if (authMode === 'signup') {
+    if (!name) {
+      showAuthError('Full Name is required.');
+      btn.disabled = false; spinner.style.display = 'none'; text.style.display = 'inline';
+      return;
+    }
+    if (!email && !phone) {
+      showAuthError('Please provide at least an email or phone number.');
+      btn.disabled = false; spinner.style.display = 'none'; text.style.display = 'inline';
+      return;
+    }
+    if (password.length < 6) {
+      showAuthError('Password must be at least 6 characters.');
+      btn.disabled = false; spinner.style.display = 'none'; text.style.display = 'inline';
+      return;
+    }
+  }
+  
+  const isSignup = authMode === 'signup';
+  const endpoint = isSignup ? '/api/signup' : '/api/login';
+  const body = isSignup ? { name, email, password, phone } : { email, password };
   
   try {
     const res = await fetch(endpoint, {
@@ -112,8 +151,8 @@ const handleAuth = async (e) => {
     
     hideAuthModal();
     showAppView(data.user);
-    trackEvent('login', { email: data.user.email });
-    showToast(`Welcome back, ${data.user.name}! 🎉`, 'success');
+    trackEvent(isSignup ? 'signup' : 'login', { email: data.user.email });
+    showToast(isSignup ? 'Welcome, ' + data.user.name + '! 🎉' : 'Welcome back, ' + data.user.name + '! 🎉', 'success');
   } catch (err) {
     showAuthError('Network error. Please check your connection.');
   } finally {
@@ -172,6 +211,9 @@ const logout = () => {
   section.innerHTML = `
     <button class="login-btn" id="login-btn" onclick="showAuthModal('login')">
       <i class="fas fa-sign-in-alt"></i> Sign In
+    </button>
+    <button class="signup-btn" id="signup-btn" onclick="showAuthModal('signup')">
+      <i class="fas fa-user-plus"></i> Sign Up
     </button>
   `;
   showToast('Signed out successfully', 'success');

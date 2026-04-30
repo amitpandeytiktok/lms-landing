@@ -89,6 +89,28 @@ body.app-mode {
   transform: translateY(-1px);
 }
 
+.signup-btn {
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: 2px solid #a855f7;
+  background: transparent;
+  color: #a855f7;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 14px;
+}
+
+.signup-btn:hover {
+  background: #a855f7;
+  color: #fff;
+}
+
+body.app-mode .signup-btn {
+  display: none;
+}
+
 .user-info {
   display: flex;
   align-items: center;

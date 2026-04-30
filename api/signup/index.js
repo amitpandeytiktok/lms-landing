@@ -14,29 +14,39 @@ module.exports = async function (context, req) {
     return;
   }
 
-  const { name, email, password } = req.body || {};
+  const { name, email, password, phone } = req.body || {};
 
-  if (!name || !email || !password) {
-    context.res = { status: 400, headers: HEADERS, body: { error: 'Name, email, and password are required.' } };
+  if (!name) {
+    context.res = { status: 400, headers: HEADERS, body: { error: 'Full Name is required.' } };
     return;
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    context.res = { status: 400, headers: HEADERS, body: { error: 'Invalid email format.' } };
+  if (!email && !phone) {
+    context.res = { status: 400, headers: HEADERS, body: { error: 'At least an email or phone number is required.' } };
     return;
   }
 
-  if (password.length < 6) {
+  if (email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      context.res = { status: 400, headers: HEADERS, body: { error: 'Invalid email format.' } };
+      return;
+    }
+  }
+
+  if (!password || password.length < 6) {
     context.res = { status: 400, headers: HEADERS, body: { error: 'Password must be at least 6 characters.' } };
     return;
   }
 
+  // Use email as RowKey if available, otherwise use phone with prefix
+  const rowKey = email || ('phone:' + phone.replace(/[^0-9+]/g, ''));
+
   try {
     // Check if user already exists
-    const existing = await tableRequest('GET', `/users(PartitionKey='user',RowKey='${encodeURIComponent(email)}')`);
+    const existing = await tableRequest('GET', `/users(PartitionKey='user',RowKey='${encodeURIComponent(rowKey)}')`);
     if (existing.status === 200) {
-      context.res = { status: 409, headers: HEADERS, body: { error: 'An account with this email already exists.' } };
+      context.res = { status: 409, headers: HEADERS, body: { error: 'An account with this email/phone already exists.' } };
       return;
     }
 
@@ -50,8 +60,10 @@ module.exports = async function (context, req) {
     // Store user
     const entity = {
       PartitionKey: 'user',
-      RowKey: email,
+      RowKey: rowKey,
       name,
+      email: email || '',
+      phone: phone || '',
       salt,
       passwordHash: hash,
       token,
@@ -61,14 +73,14 @@ module.exports = async function (context, req) {
     const result = await tableRequest('POST', '/users', entity);
     if (result.status >= 400) {
       context.log.error('Table insert failed:', result.status, JSON.stringify(result.body));
-      context.res = { status: 500, headers: HEADERS, body: { error: 'Failed to create account: ' + (result.body && result.body.Message ? result.body.Message : 'status ' + result.status) } };
+      context.res = { status: 500, headers: HEADERS, body: { error: 'Failed to create account.' } };
       return;
     }
 
     context.res = {
       status: 200,
       headers: HEADERS,
-      body: { token, user: { name, email, courseAccess: '' } }
+      body: { token, user: { name, email: email || '', phone: phone || '', courseAccess: '' } }
     };
   } catch (err) {
     context.log.error('Signup error:', err.message, err.stack);

@@ -14,16 +14,20 @@ module.exports = async function (context, req) {
     return;
   }
 
-  const { email, password } = req.body || {};
+  const { email: emailOrPhone, password } = req.body || {};
 
-  if (!email || !password) {
-    context.res = { status: 400, headers: HEADERS, body: { error: 'Email and password are required.' } };
+  if (!emailOrPhone || !password) {
+    context.res = { status: 400, headers: HEADERS, body: { error: 'Email/phone and password are required.' } };
     return;
   }
 
+  // Determine if this is a phone-based login
+  const isPhone = /^[\+\d\s\-\(\)]+$/.test(emailOrPhone) && !emailOrPhone.includes('@');
+  const rowKey = isPhone ? 'phone:' + emailOrPhone.replace(/[^0-9+]/g, '') : emailOrPhone;
+
   try {
     // Look up user
-    const result = await tableRequest('GET', `/users(PartitionKey='user',RowKey='${encodeURIComponent(email)}')`);
+    const result = await tableRequest('GET', `/users(PartitionKey='user',RowKey='${encodeURIComponent(rowKey)}')`);
     if (result.status === 404 || !result.body) {
       context.res = { status: 401, headers: HEADERS, body: { error: 'Invalid email or password.' } };
       return;
@@ -44,15 +48,17 @@ module.exports = async function (context, req) {
     // Update token in storage
     const updateEntity = {
       PartitionKey: 'user',
-      RowKey: email,
+      RowKey: rowKey,
       name: user.name,
+      email: user.email || '',
+      phone: user.phone || '',
       salt: user.salt,
       passwordHash: user.passwordHash,
       token,
       courseAccess: user.courseAccess || ''
     };
 
-    await tableRequest('PUT', `/users(PartitionKey='user',RowKey='${encodeURIComponent(email)}')`, updateEntity);
+    await tableRequest('PUT', `/users(PartitionKey='user',RowKey='${encodeURIComponent(rowKey)}')`, updateEntity);
 
     // Merge batch-based course access
     let mergedAccess = user.courseAccess || '';
@@ -62,7 +68,7 @@ module.exports = async function (context, req) {
       await tableRequest('POST', '/Tables', { TableName: 'batches' });
 
       // Find batch memberships for this user
-      const membershipsResult = await tableRequest('GET', `/batchmembers()?$filter=RowKey eq '${encodeURIComponent(email)}'`);
+      const membershipsResult = await tableRequest('GET', `/batchmembers()?$filter=RowKey eq '${encodeURIComponent(rowKey)}'`);
       const memberships = (membershipsResult.body && membershipsResult.body.value) || [];
 
       if (memberships.length > 0) {
@@ -91,7 +97,7 @@ module.exports = async function (context, req) {
     context.res = {
       status: 200,
       headers: HEADERS,
-      body: { token, user: { name: user.name, email, courseAccess: mergedAccess } }
+      body: { token, user: { name: user.name, email: user.email || '', phone: user.phone || '', courseAccess: mergedAccess } }
     };
   } catch (err) {
     context.log.error('Login error:', err.message);
