@@ -2980,7 +2980,7 @@ body:not(.app-mode) .admin-nav-btn {
 }
 
 .community-header h2 {
-  color: #fff;
+  color: #1a1a2e;
   font-size: 1.6rem;
   margin-bottom: 12px;
 }
@@ -2998,9 +2998,9 @@ body:not(.app-mode) .admin-nav-btn {
 .community-tab {
   padding: 8px 18px;
   border-radius: 8px;
-  border: 1px solid rgba(108, 60, 224, 0.3);
-  background: rgba(108, 60, 224, 0.1);
-  color: #ccc;
+  border: 1px solid #e0e0e8;
+  background: #f8f8fc;
+  color: #555;
   cursor: pointer;
   font-size: 0.9rem;
   transition: all 0.2s;
@@ -3052,8 +3052,8 @@ body:not(.app-mode) .admin-nav-btn {
   align-items: center;
   gap: 14px;
   padding: 16px 20px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: #fff;
+  border: 1px solid #e0e0e8;
   border-left: 3px solid #6c3ce0;
   border-radius: 10px;
   cursor: pointer;
@@ -3061,7 +3061,7 @@ body:not(.app-mode) .admin-nav-btn {
 }
 
 .thread-card:hover {
-  background: rgba(108, 60, 224, 0.08);
+  background: #f8f6ff;
   transform: translateX(4px);
   border-left-color: #06b6d4;
 }
@@ -3077,7 +3077,7 @@ body:not(.app-mode) .admin-nav-btn {
 }
 
 .thread-title {
-  color: #fff;
+  color: #1a1a2e;
   font-size: 1rem;
   font-weight: 600;
   margin: 0 0 4px;
@@ -3113,8 +3113,8 @@ body:not(.app-mode) .admin-nav-btn {
   height: 28px;
   padding: 0 8px;
   border-radius: 14px;
-  background: rgba(108, 60, 224, 0.2);
-  color: #a78bfa;
+  background: #f0edf8;
+  color: #6c3ce0;
   font-size: 0.8rem;
   font-weight: 600;
 }
@@ -3126,9 +3126,9 @@ body:not(.app-mode) .admin-nav-btn {
   gap: 6px;
   padding: 8px 16px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid #e0e0e8;
   background: transparent;
-  color: #aaa;
+  color: #555;
   font-size: 0.9rem;
   cursor: pointer;
   margin-bottom: 20px;
@@ -3136,20 +3136,20 @@ body:not(.app-mode) .admin-nav-btn {
 }
 
 .community-back-btn:hover {
-  color: #fff;
+  color: #6c3ce0;
   border-color: #6c3ce0;
 }
 
 .thread-detail-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: #fff;
+  border: 1px solid #e0e0e8;
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
 }
 
 .thread-detail-title {
-  color: #fff;
+  color: #1a1a2e;
   font-size: 1.4rem;
   margin: 0 0 8px;
 }
@@ -3161,7 +3161,7 @@ body:not(.app-mode) .admin-nav-btn {
 }
 
 .thread-detail-body {
-  color: #ccc;
+  color: #333;
   font-size: 0.95rem;
   line-height: 1.7;
 }
@@ -3172,11 +3172,11 @@ body:not(.app-mode) .admin-nav-btn {
 }
 
 .replies-heading {
-  color: #fff;
+  color: #1a1a2e;
   font-size: 1.1rem;
   margin-bottom: 16px;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid #e0e0e8;
 }
 
 .replies-empty {
@@ -3187,8 +3187,8 @@ body:not(.app-mode) .admin-nav-btn {
 }
 
 .reply-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: #fff;
+  border: 1px solid #e0e0e8;
   border-radius: 10px;
   padding: 16px;
   margin-bottom: 10px;
@@ -3213,7 +3213,7 @@ body:not(.app-mode) .admin-nav-btn {
 }
 
 .reply-body {
-  color: #bbb;
+  color: #333;
   font-size: 0.92rem;
   line-height: 1.6;
 }
@@ -3227,14 +3227,14 @@ body:not(.app-mode) .admin-nav-btn {
 }
 
 .community-form-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: #fff;
+  border: 1px solid #e0e0e8;
   border-radius: 12px;
   padding: 28px;
 }
 
 .community-form-card h3 {
-  color: #fff;
+  color: #1a1a2e;
   font-size: 1.2rem;
   margin: 0 0 20px;
 }
@@ -3250,7 +3250,7 @@ body:not(.app-mode) .admin-nav-btn {
 
 .community-field label {
   display: block;
-  color: #aaa;
+  color: #555;
   font-size: 0.85rem;
   margin-bottom: 6px;
   font-weight: 500;
@@ -3260,9 +3260,9 @@ body:not(.app-mode) .admin-nav-btn {
   width: 100%;
   padding: 10px 14px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(0, 0, 0, 0.3);
-  color: #fff;
+  border: 1px solid #e0e0e8;
+  background: #f8f8fc;
+  color: #1a1a2e;
   font-size: 0.95rem;
   font-family: inherit;
   box-sizing: border-box;
@@ -3278,9 +3278,9 @@ body:not(.app-mode) .admin-nav-btn {
   width: 100%;
   padding: 12px 14px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(0, 0, 0, 0.3);
-  color: #fff;
+  border: 1px solid #e0e0e8;
+  background: #f8f8fc;
+  color: #1a1a2e;
   font-size: 0.92rem;
   font-family: inherit;
   resize: vertical;
@@ -3303,17 +3303,17 @@ body:not(.app-mode) .admin-nav-btn {
 .community-cancel-btn {
   padding: 10px 20px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid #e0e0e8;
   background: transparent;
-  color: #aaa;
+  color: #555;
   font-size: 0.9rem;
   cursor: pointer;
   transition: color 0.2s, border-color 0.2s;
 }
 
 .community-cancel-btn:hover {
-  color: #fff;
-  border-color: #fff;
+  color: #1a1a2e;
+  border-color: #1a1a2e;
 }
 
 .community-submit-btn {
