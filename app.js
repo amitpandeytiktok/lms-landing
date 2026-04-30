@@ -386,7 +386,7 @@ const getCourseTotalTasks = () => {
 const ALL_COURSES = [
   {
     id: 'ai-beginner',
-    name: 'AI Beginner Course',
+    name: 'AI Bootcamp Course',
     description: 'Master AI fundamentals across ' + (typeof COURSE_DATA !== 'undefined' ? COURSE_DATA.weeks.length : 4) + ' weeks',
     emoji: '🤖',
     gradient: 'linear-gradient(135deg, #1a0533 0%, #2d1560 30%, #6c3ce0 65%, #a855f7 100%)',
@@ -700,7 +700,7 @@ const renderAdminView = async () => {
       html += `<tr>
         <td>${u.name || '—'}</td>
         <td>${u.email}</td>
-        <td>${hasAccess ? '<span class="access-yes">✅ ai-beginner</span>' : '<span class="access-no">❌ No access</span>'}</td>
+        <td>${hasAccess ? '<span class="access-yes">✅ AI Bootcamp</span>' : '<span class="access-no">❌ No access</span>'}</td>
         <td>${hasAccess
           ? `<button class="revoke-btn" onclick="adminRevokeAccess('${u.email}')">Revoke</button>`
           : `<button class="grant-btn" onclick="adminGrantAccessFor('${u.email}')">Grant</button>`
