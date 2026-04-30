@@ -401,11 +401,12 @@ let pendingCourseAction = null; // stores courseId for modal
 const renderDashboard = () => {
   const enrolledGrid = byId('enrolled-courses-grid');
   const exploreGrid = byId('explore-courses-grid');
+  const isAdmin = state.currentUser && state.currentUser.email === 'officialtechwaveteam@gmail.com';
   const access = (state.currentUser && state.currentUser.courseAccess) || '';
   const enrolledCourses = access.split(',').map(s => s.trim()).filter(Boolean);
 
-  const enrolled = ALL_COURSES.filter(c => enrolledCourses.includes(c.id));
-  const locked = ALL_COURSES.filter(c => !enrolledCourses.includes(c.id));
+  const enrolled = isAdmin ? ALL_COURSES : ALL_COURSES.filter(c => enrolledCourses.includes(c.id));
+  const locked = isAdmin ? [] : ALL_COURSES.filter(c => !enrolledCourses.includes(c.id));
 
   // Enrolled section
   const enrolledSection = byId('enrolled-courses-section');
@@ -621,8 +622,9 @@ const hideAllViews = () => {
 };
 
 const navigateToCourseDetail = () => {
+  const isAdmin = state.currentUser && state.currentUser.email === 'officialtechwaveteam@gmail.com';
   const access = (state.currentUser && state.currentUser.courseAccess) || '';
-  if (!access.split(',').map(s => s.trim()).includes('ai-beginner')) {
+  if (!isAdmin && !access.split(',').map(s => s.trim()).includes('ai-beginner')) {
     showToast('You do not have access to this course. Please contact your administrator.', 'error');
     return;
   }
