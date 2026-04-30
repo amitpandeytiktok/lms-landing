@@ -381,31 +381,207 @@ const getCourseTotalTasks = () => {
 };
 
 // ===============================================
-//  DASHBOARD – SINGLE COURSE TILE
+//  DASHBOARD – TWO SECTIONS: ENROLLED + EXPLORE
 // ===============================================
+const ALL_COURSES = [
+  {
+    id: 'ai-beginner',
+    name: 'AI Beginner Course',
+    description: 'Master AI fundamentals across ' + (typeof COURSE_DATA !== 'undefined' ? COURSE_DATA.weeks.length : 4) + ' weeks',
+    emoji: '🤖',
+    gradient: 'linear-gradient(135deg, #1a0533 0%, #2d1560 30%, #6c3ce0 65%, #a855f7 100%)',
+    lessons: typeof COURSE_DATA !== 'undefined' ? getCourseTotalLessons() : 51,
+    tasks: typeof COURSE_DATA !== 'undefined' ? getCourseTotalTasks() : 51,
+    weeks: typeof COURSE_DATA !== 'undefined' ? COURSE_DATA.weeks.length : 4
+  }
+];
+
+let pendingCourseAction = null; // stores courseId for modal
+
 const renderDashboard = () => {
-  const grid = byId('courses-grid');
-  const pct = getCourseProgress();
-  const fillClass = pct === 100 ? 'green' : 'blue';
-  grid.innerHTML = `
-    <div class="course-card" data-course="ai-beginner">
-      <div class="card-image" style="background:linear-gradient(135deg, #1a0533 0%, #2d1560 30%, #6c3ce0 65%, #a855f7 100%)">
-        <span class="card-emoji">🤖</span>
-      </div>
-      <div class="card-info">
-        <div class="card-week-title">AI Beginner Course</div>
-        <div class="card-course-name">Master AI fundamentals across ${COURSE_DATA.weeks.length} weeks</div>
-        <div class="progress-wrapper">
-          <div class="progress-label"><span>Progress</span><span>${pct}%</span></div>
-          <div class="progress-bar"><div class="progress-fill ${fillClass}" style="width:${pct}%"></div></div>
+  const enrolledGrid = byId('enrolled-courses-grid');
+  const exploreGrid = byId('explore-courses-grid');
+  const access = (state.currentUser && state.currentUser.courseAccess) || '';
+  const enrolledCourses = access.split(',').map(s => s.trim()).filter(Boolean);
+
+  const enrolled = ALL_COURSES.filter(c => enrolledCourses.includes(c.id));
+  const locked = ALL_COURSES.filter(c => !enrolledCourses.includes(c.id));
+
+  // Enrolled section
+  const enrolledSection = byId('enrolled-courses-section');
+  if (enrolled.length === 0) {
+    enrolledGrid.innerHTML = '<p class="empty-courses-msg">You haven\'t enrolled in any courses yet. Use a batch code or express interest below!</p>';
+  } else {
+    enrolledGrid.innerHTML = enrolled.map(c => {
+      const pct = c.id === 'ai-beginner' ? getCourseProgress() : 0;
+      const fillClass = pct === 100 ? 'green' : 'blue';
+      return `
+        <div class="course-card" data-course="${c.id}">
+          <div class="card-image" style="background:${c.gradient}">
+            <span class="card-emoji">${c.emoji}</span>
+            <span class="course-badge enrolled-badge"><i class="fas fa-check-circle"></i> Enrolled</span>
+          </div>
+          <div class="card-info">
+            <div class="card-week-title">${c.name}</div>
+            <div class="card-course-name">${c.description}</div>
+            <div class="progress-wrapper">
+              <div class="progress-label"><span>Progress</span><span>${pct}%</span></div>
+              <div class="progress-bar"><div class="progress-fill ${fillClass}" style="width:${pct}%"></div></div>
+            </div>
+            <div class="card-meta">
+              <span><i class="fas fa-book-open"></i> ${c.lessons} lessons</span>
+              <span><i class="fas fa-tasks"></i> ${c.tasks} tasks</span>
+              <span><i class="fas fa-calendar-week"></i> ${c.weeks} weeks</span>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // Explore (locked) section
+  const exploreSection = byId('explore-courses-section');
+  if (locked.length === 0) {
+    exploreSection.style.display = 'none';
+  } else {
+    exploreSection.style.display = '';
+    exploreGrid.innerHTML = locked.map(c => `
+      <div class="course-card locked-card" data-course="${c.id}" onclick="showCourseActionModal('${c.id}', '${c.name.replace(/'/g, "\\'")}')">
+        <div class="card-image" style="background:${c.gradient}">
+          <span class="card-emoji">${c.emoji}</span>
+          <span class="course-badge locked-badge"><i class="fas fa-lock"></i> Locked</span>
         </div>
-        <div class="card-meta">
-          <span><i class="fas fa-book-open"></i> ${getCourseTotalLessons()} lessons</span>
-          <span><i class="fas fa-tasks"></i> ${getCourseTotalTasks()} tasks</span>
-          <span><i class="fas fa-calendar-week"></i> ${COURSE_DATA.weeks.length} weeks</span>
+        <div class="card-info">
+          <div class="card-week-title">${c.name}</div>
+          <div class="card-course-name">${c.description}</div>
+          <div class="card-meta">
+            <span><i class="fas fa-book-open"></i> ${c.lessons} lessons</span>
+            <span><i class="fas fa-tasks"></i> ${c.tasks} tasks</span>
+            <span><i class="fas fa-calendar-week"></i> ${c.weeks} weeks</span>
+          </div>
         </div>
-      </div>
-    </div>`;
+      </div>`).join('');
+  }
+};
+
+// ===============================================
+//  COURSE ACTION MODAL (Batch Code / Interest)
+// ===============================================
+const showCourseActionModal = (courseId, courseName) => {
+  pendingCourseAction = { courseId, courseName };
+  byId('course-action-title').textContent = courseName || 'Course Access';
+  byId('course-action-subtitle').textContent = 'Choose how to get access to this course';
+  byId('modal-batch-code').value = '';
+  byId('modal-enroll-error').style.display = 'none';
+  byId('modal-interest-error').style.display = 'none';
+
+  // Pre-fill interest fields with user data
+  const user = state.currentUser || {};
+  byId('modal-interest-name').value = user.name || '';
+  byId('modal-interest-email').value = user.email || '';
+  byId('modal-interest-phone').value = user.phone || '';
+
+  byId('course-action-modal').style.display = 'flex';
+};
+
+const hideCourseActionModal = () => {
+  byId('course-action-modal').style.display = 'none';
+  pendingCourseAction = null;
+};
+
+const enrollFromModal = async () => {
+  const code = byId('modal-batch-code').value.trim();
+  if (!code) {
+    byId('modal-enroll-error').textContent = 'Please enter a batch code.';
+    byId('modal-enroll-error').style.display = 'block';
+    return;
+  }
+  await doEnrollWithCode(code);
+};
+
+const enrollWithBatchCode = async () => {
+  const code = byId('dashboard-batch-code').value.trim();
+  if (!code) {
+    showToast('Please enter a batch code.', 'error');
+    return;
+  }
+  await doEnrollWithCode(code);
+};
+
+const doEnrollWithCode = async (code) => {
+  try {
+    const token = localStorage.getItem('lms_token');
+    const res = await fetch('/api/enrollbatch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
+      body: JSON.stringify({ batchCode: code })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const errMsg = data.error || 'Enrollment failed.';
+      // Show in modal if open, otherwise toast
+      const modalErr = byId('modal-enroll-error');
+      if (byId('course-action-modal').style.display === 'flex' && modalErr) {
+        modalErr.textContent = errMsg;
+        modalErr.style.display = 'block';
+      } else {
+        showToast(errMsg, 'error');
+      }
+      return;
+    }
+
+    // Success — update user's courseAccess locally
+    if (data.courseId && state.currentUser) {
+      const currentAccess = (state.currentUser.courseAccess || '').split(',').map(s => s.trim()).filter(Boolean);
+      if (!currentAccess.includes(data.courseId)) {
+        currentAccess.push(data.courseId);
+        state.currentUser.courseAccess = currentAccess.join(',');
+        localStorage.setItem('lms_user', JSON.stringify(state.currentUser));
+      }
+    }
+
+    hideCourseActionModal();
+    byId('dashboard-batch-code').value = '';
+    showToast(data.message || 'Successfully enrolled! 🎉', 'success');
+    renderDashboard();
+  } catch (err) {
+    showToast('Network error. Please try again.', 'error');
+  }
+};
+
+const submitCourseInterest = async () => {
+  if (!pendingCourseAction) return;
+  const name = byId('modal-interest-name').value.trim();
+  const email = byId('modal-interest-email').value.trim();
+  const phone = byId('modal-interest-phone').value.trim();
+
+  if (!email && !phone) {
+    byId('modal-interest-error').textContent = 'Please provide at least an email or phone number.';
+    byId('modal-interest-error').style.display = 'block';
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem('lms_token');
+    const res = await fetch('/api/courseinterest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
+      body: JSON.stringify({
+        courseId: pendingCourseAction.courseId,
+        courseName: pendingCourseAction.courseName,
+        name, email, phone
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      byId('modal-interest-error').textContent = data.error || 'Failed to submit.';
+      byId('modal-interest-error').style.display = 'block';
+      return;
+    }
+    hideCourseActionModal();
+    showToast('Interest submitted! We\'ll contact you soon. 🎉', 'success');
+  } catch (err) {
+    showToast('Network error. Please try again.', 'error');
+  }
 };
 
 // ===============================================
@@ -499,6 +675,7 @@ const navigateToAdmin = () => {
   loadAnalytics();
   loadLeads();
   loadBatches();
+  loadCourseInterests();
 };
 
 const renderAdminView = async () => {
@@ -659,21 +836,78 @@ const loadLeads = async () => {
   }
 };
 
+// --------------- COURSE INTEREST MANAGEMENT ---------------
+const loadCourseInterests = async () => {
+  const container = byId('admin-course-interests');
+  if (!container) return;
+  try {
+    const token = localStorage.getItem('lms_token');
+    const res = await fetch('/api/courseinterest', {
+      headers: { 'X-Auth-Token': token }
+    });
+    if (!res.ok) throw new Error('Failed');
+    const interests = await res.json();
+    if (!interests || interests.length === 0) {
+      container.innerHTML = '<p style="text-align:center;padding:20px;color:#888;">No course interest requests yet.</p>';
+      return;
+    }
+    container.innerHTML = `
+      <table class="admin-table" style="width:100%">
+        <thead><tr><th>Student</th><th>Course</th><th>Email</th><th>Phone</th><th>Date</th><th></th></tr></thead>
+        <tbody>${interests.map(i => `
+          <tr>
+            <td>${i.studentName || '—'}</td>
+            <td>${i.courseName || i.courseId}</td>
+            <td>${i.contactEmail || i.studentEmail || '—'}</td>
+            <td>${i.contactPhone || '—'}</td>
+            <td>${i.createdAt ? new Date(i.createdAt).toLocaleDateString() : '—'}</td>
+            <td><button class="revoke-btn" onclick="deleteCourseInterest('${i.partitionKey}','${i.rowKey}')"><i class="fas fa-trash"></i></button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <p style="text-align:right;padding:8px;color:#888;font-size:0.85rem;">${interests.length} request${interests.length !== 1 ? 's' : ''}</p>`;
+  } catch {
+    container.innerHTML = '<p style="color:#ff6b6b;text-align:center;padding:20px;">Error loading course interests.</p>';
+  }
+};
+
+const deleteCourseInterest = async (partitionKey, rowKey) => {
+  try {
+    const token = localStorage.getItem('lms_token');
+    const res = await fetch('/api/courseinterest', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
+      body: JSON.stringify({ partitionKey, rowKey })
+    });
+    if (!res.ok) throw new Error('Failed');
+    showToast('Interest request deleted', 'success');
+    loadCourseInterests();
+  } catch {
+    showToast('Failed to delete', 'error');
+  }
+};
+
 const adminCreateBatch = async () => {
   const name = byId('batch-name').value.trim();
-  const courses = byId('batch-courses').value.trim();
+  const batchCode = byId('batch-code').value.trim();
+  const courseId = byId('batch-course').value;
+  const maxSize = parseInt(byId('batch-max-size').value) || 30;
   const expiresAt = byId('batch-expiry').value;
-  if (!name || !courses || !expiresAt) { showToast('Please fill in all batch fields', 'error'); return; }
+  if (!name || !batchCode || !courseId || !expiresAt) {
+    showToast('Please fill in all batch fields', 'error');
+    return;
+  }
   try {
     const token = localStorage.getItem('lms_token');
     const res = await fetch('/api/createbatch', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
-      body: JSON.stringify({ name, courses, expiresAt: new Date(expiresAt).toISOString() })
+      body: JSON.stringify({ name, batchCode, courseId, maxSize, expiresAt: new Date(expiresAt).toISOString() })
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.error || 'Failed to create batch', 'error'); return; }
     byId('batch-name').value = '';
+    byId('batch-code').value = '';
     byId('batch-expiry').value = '';
     showToast('Batch created successfully!', 'success');
     loadBatches();
@@ -691,7 +925,7 @@ const loadBatches = async () => {
     const data = await res.json();
     const batches = data.batches || [];
     if (batches.length === 0) {
-      container.innerHTML = '<p style="text-align:center;padding:20px;color:rgba(255,255,255,0.5);">No batches created yet.</p>';
+      container.innerHTML = '<p style="text-align:center;padding:20px;color:#999;">No batches created yet.</p>';
       return;
     }
     let html = '<div class="batch-grid">';
@@ -706,9 +940,10 @@ const loadBatches = async () => {
             <span class="batch-status ${statusClass}">${statusLabel}</span>
           </div>
           <div class="batch-card-info">
-            <span><i class="fas fa-book"></i> ${b.courses}</span>
+            <span><i class="fas fa-key"></i> Code: <strong>${b.batchCode || '—'}</strong></span>
+            <span><i class="fas fa-book"></i> ${b.courseId || b.courses || '—'}</span>
             <span><i class="fas fa-calendar"></i> Expires: ${new Date(b.expiresAt).toLocaleDateString()}</span>
-            <span><i class="fas fa-users"></i> ${b.memberCount} member${b.memberCount !== 1 ? 's' : ''}</span>
+            <span><i class="fas fa-users"></i> ${b.enrolledCount || 0}/${b.maxSize || '∞'} enrolled (${b.memberCount} pre-approved)</span>
           </div>
           <div class="batch-card-actions">
             <button class="batch-toggle-btn" onclick="toggleBatchMembers('${b.id}')"><i class="fas fa-chevron-down"></i> Members</button>
@@ -732,14 +967,14 @@ const toggleBatchMembers = async (batchId) => {
   if (!el) return;
   if (el.style.display === 'none') {
     el.style.display = 'block';
-    el.innerHTML = '<p style="padding:10px;color:rgba(255,255,255,0.5);">Loading...</p>';
+    el.innerHTML = '<p style="padding:10px;color:#999;">Loading...</p>';
     try {
       const token = localStorage.getItem('lms_token');
       const res = await fetch(`/api/batchmembers?batchId=${encodeURIComponent(batchId)}`, { headers: { 'X-Auth-Token': token } });
       const data = await res.json();
       const members = data.members || [];
       if (members.length === 0) {
-        el.innerHTML = '<p style="padding:10px;color:rgba(255,255,255,0.5);">No members in this batch.</p>';
+        el.innerHTML = '<p style="padding:10px;color:#999;">No members in this batch.</p>';
         return;
       }
       let html = '<table class="batch-members-table"><thead><tr><th>Name</th><th>Email</th><th>Added</th><th></th></tr></thead><tbody>';
@@ -1409,11 +1644,13 @@ const submitInterest = async (e) => {
 // ===============================================
 const setupEventListeners = () => {
 
-  // --- Dashboard: Course card click → course detail ---
-  byId('courses-grid').addEventListener('click', (e) => {
+  // --- Dashboard: Enrolled course card click → course detail ---
+  byId('enrolled-courses-grid').addEventListener('click', (e) => {
     const card = e.target.closest('.course-card');
     if (card) navigateToCourseDetail();
   });
+
+  // --- Dashboard: Explore (locked) course cards are handled by onclick in the HTML ---
 
   // --- Course Detail: Week card click → lesson view ---
   byId('weeks-grid').addEventListener('click', (e) => {

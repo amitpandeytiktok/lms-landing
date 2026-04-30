@@ -71,6 +71,14 @@
     {
       "route": "/api/listleads",
       "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/enrollbatch",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/courseinterest",
+      "allowedRoles": ["anonymous"]
     }
   ],
   "navigationFallback": {

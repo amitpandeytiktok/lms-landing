@@ -1218,6 +1218,191 @@ html {
   padding-top: 80px;
 }
 
+#dashboard-view .courses-container {
+  margin-bottom: 20px;
+}
+
+/* Batch Code Entry Bar */
+.batch-code-bar {
+  padding: 16px 28px;
+  margin-bottom: 20px;
+}
+
+.batch-code-bar-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.batch-code-icon {
+  color: #6c3ce0;
+  font-size: 1.2rem;
+}
+
+.batch-code-bar-inner > span {
+  font-weight: 600;
+  color: #1a1a2e;
+  white-space: nowrap;
+}
+
+.batch-code-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 8px 14px;
+  border: 2px solid #e0e0e8;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.batch-code-input:focus {
+  border-color: #6c3ce0;
+}
+
+.batch-code-submit {
+  padding: 8px 18px;
+  background: #6c3ce0;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.batch-code-submit:hover {
+  background: #5a2dc5;
+}
+
+/* Course badges */
+.course-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.enrolled-badge {
+  background: rgba(16, 185, 129, 0.9);
+  color: #fff;
+}
+
+.locked-badge {
+  background: rgba(239, 68, 68, 0.85);
+  color: #fff;
+}
+
+/* Locked card styling */
+.locked-card {
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.locked-card:hover {
+  opacity: 1;
+  transform: translateY(-4px);
+}
+
+.empty-courses-msg {
+  text-align: center;
+  padding: 30px 20px;
+  color: #888;
+  font-size: 0.95rem;
+}
+
+/* Course Action Modal */
+.course-action-content {
+  max-width: 520px;
+}
+
+.course-action-options {
+  padding: 0 10px;
+}
+
+.course-action-option {
+  padding: 16px 0;
+}
+
+.course-action-option h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 6px;
+}
+
+.course-action-option h3 i {
+  color: #6c3ce0;
+  margin-right: 6px;
+}
+
+.course-action-option p {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+.course-action-input-row {
+  display: flex;
+  gap: 10px;
+}
+
+.course-action-input-row .admin-input {
+  flex: 1;
+}
+
+.course-action-divider {
+  text-align: center;
+  position: relative;
+  margin: 8px 0;
+}
+
+.course-action-divider::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: #e0e0e8;
+}
+
+.course-action-divider span {
+  position: relative;
+  background: #fff;
+  padding: 0 16px;
+  color: #999;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.course-action-interest-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.course-action-hint {
+  font-size: 0.78rem;
+  color: #999;
+  margin-bottom: 10px;
+  font-style: italic;
+}
+
+.course-interest-btn {
+  width: 100%;
+}
+
 #course-detail-view {
   padding-top: 80px;
 }
@@ -2430,6 +2615,35 @@ html {
   background: #f3f0ff;
 }
 
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.admin-table th {
+  text-align: left;
+  padding: 12px 16px;
+  background: #f3f4f8;
+  color: #555;
+  font-weight: 600;
+  border-bottom: 2px solid #e0e0e8;
+}
+
+.admin-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f5;
+  color: #333;
+}
+
+.admin-table tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.admin-table tr:hover {
+  background: #f3f0ff;
+}
+
 .access-yes {
   color: #10b981;
   font-weight: 600;
@@ -3183,20 +3397,19 @@ body:not(.app-mode) .admin-nav-btn {
 }
 
 .batch-date-field label {
-  color: rgba(255,255,255,0.6);
+  color: #555;
   font-size: 0.85rem;
   white-space: nowrap;
 }
 
 .batch-date-field input[type="date"] {
   flex: 1;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: #fff;
+  background: #f8f8fc;
+  border: 1px solid #e0e0e8;
+  color: #1a1a2e;
   padding: 10px 14px;
   border-radius: 8px;
   font-size: 0.95rem;
-  color-scheme: dark;
 }
 
 .enroll-credentials-card {
@@ -3260,15 +3473,15 @@ body:not(.app-mode) .admin-nav-btn {
 }
 
 .batch-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: #f8f8fc;
+  border: 1px solid #e0e0e8;
   border-radius: 12px;
   padding: 18px;
   transition: border-color 0.2s;
 }
 
 .batch-card:hover {
-  border-color: rgba(108, 60, 224, 0.3);
+  border-color: #6c3ce0;
 }
 
 .batch-card-header {
@@ -3281,7 +3494,7 @@ body:not(.app-mode) .admin-nav-btn {
 .batch-card-header h3 {
   margin: 0;
   font-size: 1.05rem;
-  color: #fff;
+  color: #1a1a2e;
 }
 
 .batch-status {
@@ -3308,7 +3521,7 @@ body:not(.app-mode) .admin-nav-btn {
   flex-wrap: wrap;
   gap: 14px;
   font-size: 0.85rem;
-  color: rgba(255,255,255,0.55);
+  color: #555;
   margin-bottom: 14px;
 }
 
@@ -3325,9 +3538,9 @@ body:not(.app-mode) .admin-nav-btn {
 }
 
 .batch-toggle-btn {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: rgba(255,255,255,0.7);
+  background: #f0edf8;
+  border: 1px solid #e0e0e8;
+  color: #555;
   padding: 6px 14px;
   border-radius: 6px;
   cursor: pointer;
@@ -3336,7 +3549,7 @@ body:not(.app-mode) .admin-nav-btn {
 }
 
 .batch-toggle-btn:hover {
-  background: rgba(255,255,255,0.1);
+  background: #e8e4f4;
 }
 
 .batch-add-member {
@@ -3360,7 +3573,7 @@ body:not(.app-mode) .admin-nav-btn {
 
 .batch-members-list {
   margin-top: 12px;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid #e0e0e8;
   padding-top: 10px;
 }
 
@@ -3373,18 +3586,18 @@ body:not(.app-mode) .admin-nav-btn {
 .batch-members-table th {
   text-align: left;
   padding: 6px 10px;
-  color: rgba(255,255,255,0.4);
+  color: #888;
   font-weight: 500;
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid #e0e0e8;
 }
 
 .batch-members-table td {
   padding: 8px 10px;
-  color: rgba(255,255,255,0.75);
-  border-bottom: 1px solid rgba(255,255,255,0.03);
+  color: #333;
+  border-bottom: 1px solid #f0f0f4;
 }
 
 .batch-remove-btn {

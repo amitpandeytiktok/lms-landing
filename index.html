@@ -211,11 +211,67 @@
 
   <!-- ==================== DASHBOARD VIEW ==================== -->
   <div id="dashboard-view">
-    <div class="courses-container card">
-      <div class="courses-header">
-        <h2>Your Courses</h2>
+    <!-- Batch Code Entry Bar -->
+    <div class="batch-code-bar card">
+      <div class="batch-code-bar-inner">
+        <i class="fas fa-key batch-code-icon"></i>
+        <span>Have a batch code?</span>
+        <input type="text" id="dashboard-batch-code" placeholder="Enter batch code (e.g. AI-2026-B1)" class="batch-code-input">
+        <button class="batch-code-submit" onclick="enrollWithBatchCode()"><i class="fas fa-unlock"></i> Enroll</button>
       </div>
-      <div id="courses-grid" class="courses-grid"></div>
+    </div>
+
+    <!-- Enrolled Courses -->
+    <div class="courses-container card" id="enrolled-courses-section">
+      <div class="courses-header">
+        <h2>📚 Your Courses</h2>
+      </div>
+      <div id="enrolled-courses-grid" class="courses-grid"></div>
+    </div>
+
+    <!-- Explore Courses -->
+    <div class="courses-container card" id="explore-courses-section">
+      <div class="courses-header">
+        <h2>🔍 Explore Courses</h2>
+      </div>
+      <div id="explore-courses-grid" class="courses-grid"></div>
+    </div>
+  </div>
+
+  <!-- ==================== COURSE ACTION MODAL ==================== -->
+  <div id="course-action-modal" class="auth-modal" style="display:none">
+    <div class="auth-modal-backdrop" onclick="hideCourseActionModal()"></div>
+    <div class="auth-modal-content course-action-content">
+      <button class="auth-modal-close" onclick="hideCourseActionModal()"><i class="fas fa-times"></i></button>
+      <div class="auth-modal-header">
+        <i class="fas fa-lock auth-modal-icon" style="color:#a855f7"></i>
+        <h2 id="course-action-title">Course Access</h2>
+        <p id="course-action-subtitle">Choose how to get access to this course</p>
+      </div>
+      <div class="course-action-options">
+        <div class="course-action-option">
+          <h3><i class="fas fa-key"></i> Enter Batch Code</h3>
+          <p>If your administrator has shared a batch code with you, enter it below.</p>
+          <div class="course-action-input-row">
+            <input type="text" id="modal-batch-code" placeholder="Enter batch code" class="admin-input">
+            <button class="grant-btn" onclick="enrollFromModal()"><i class="fas fa-unlock"></i> Enroll</button>
+          </div>
+          <div id="modal-enroll-error" class="auth-error" style="display:none"></div>
+        </div>
+        <div class="course-action-divider"><span>OR</span></div>
+        <div class="course-action-option">
+          <h3><i class="fas fa-hand-pointer"></i> I'm Interested</h3>
+          <p>Let us know you're interested and we'll get in touch about enrollment.</p>
+          <div class="course-action-interest-fields">
+            <input type="text" id="modal-interest-name" placeholder="Full Name" class="admin-input">
+            <input type="email" id="modal-interest-email" placeholder="Email Address" class="admin-input">
+            <input type="tel" id="modal-interest-phone" placeholder="Phone Number" class="admin-input">
+          </div>
+          <p class="course-action-hint">At least one contact field (email or phone) is required</p>
+          <button class="grant-btn course-interest-btn" onclick="submitCourseInterest()"><i class="fas fa-paper-plane"></i> Submit Interest</button>
+          <div id="modal-interest-error" class="auth-error" style="display:none"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -357,8 +413,12 @@
     <div class="admin-container card">
       <h2 class="admin-title">📦 Batch Management</h2>
       <div class="batch-create-form">
-        <input type="text" id="batch-name" placeholder="Batch Name" class="admin-input">
-        <input type="text" id="batch-courses" placeholder="Courses (comma-separated, e.g. ai-beginner)" class="admin-input" value="ai-beginner">
+        <input type="text" id="batch-name" placeholder="Batch Name (e.g. AI Beginner Batch 1)" class="admin-input">
+        <input type="text" id="batch-code" placeholder="Batch Code (e.g. AI-2026-B1)" class="admin-input">
+        <select id="batch-course" class="admin-input">
+          <option value="ai-beginner">AI Beginner Course</option>
+        </select>
+        <input type="number" id="batch-max-size" placeholder="Max Students" class="admin-input" min="1" value="30">
         <div class="batch-date-field">
           <label for="batch-expiry">Expiry Date:</label>
           <input type="date" id="batch-expiry" class="admin-input">
@@ -366,7 +426,7 @@
         <button class="grant-btn" onclick="adminCreateBatch()"><i class="fas fa-plus-circle"></i> Create Batch</button>
       </div>
       <div id="batch-list" style="margin-top:20px;">
-        <p style="text-align:center;padding:20px;color:rgba(255,255,255,0.5);">Loading batches...</p>
+        <p style="text-align:center;padding:20px;color:#666;">Loading batches...</p>
       </div>
     </div>
 
@@ -374,6 +434,12 @@
     <div class="admin-container card">
       <h2 class="admin-title">📋 Interest Form Submissions</h2>
       <div id="admin-leads-list"><p style="text-align:center;padding:20px;">Loading leads...</p></div>
+    </div>
+
+    <!-- Course Interest Submissions -->
+    <div class="admin-container card">
+      <h2 class="admin-title">🎯 Course Interest Requests</h2>
+      <div id="admin-course-interests"><p style="text-align:center;padding:20px;">Loading course interests...</p></div>
     </div>
 
     <!-- User Management -->

@@ -53,9 +53,11 @@ module.exports = async function (context, req) {
         const accessSet = new Set(mergedAccess.split(',').map(s => s.trim()).filter(Boolean));
 
         memberships.forEach(m => {
+          // Only count if student is enrolled
+          if (m.enrolled !== true && m.enrolled !== 'true') return;
           const batch = batchMap[m.PartitionKey];
           if (batch && new Date(batch.expiresAt) > now) {
-            (batch.courses || '').split(',').map(s => s.trim()).filter(Boolean).forEach(c => accessSet.add(c));
+            (batch.courseId || batch.courses || '').split(',').map(s => s.trim()).filter(Boolean).forEach(c => accessSet.add(c));
           }
         });
 

@@ -30,9 +30,19 @@ module.exports = async function (context, req) {
       return;
     }
 
-    const { name, courses, expiresAt } = req.body || {};
-    if (!name || !courses || !expiresAt) {
-      context.res = { status: 400, headers: HEADERS, body: { error: 'Name, courses, and expiresAt are required.' } };
+    const { name, batchCode, courseId, maxSize, expiresAt } = req.body || {};
+    if (!name || !batchCode || !courseId || !expiresAt) {
+      context.res = { status: 400, headers: HEADERS, body: { error: 'Name, batchCode, courseId, and expiresAt are required.' } };
+      return;
+    }
+
+    await tableRequest('POST', '/Tables', { TableName: 'batches' });
+
+    // Validate batchCode uniqueness
+    const existingBatches = await tableRequest('GET', '/batches()');
+    const batches = (existingBatches.body && existingBatches.body.value) || [];
+    if (batches.some(b => b.batchCode === batchCode)) {
+      context.res = { status: 400, headers: HEADERS, body: { error: 'Batch code already exists. Please use a unique code.' } };
       return;
     }
 
@@ -41,14 +51,13 @@ module.exports = async function (context, req) {
       PartitionKey: 'batch',
       RowKey: batchId,
       name,
-      courses,
+      batchCode,
+      courseId,
+      maxSize: parseInt(maxSize) || 30,
       expiresAt,
       createdAt: new Date().toISOString(),
       status: 'active'
     };
-
-    // Create batches table if needed (Azure returns 409 if exists, that's fine)
-    await tableRequest('POST', '/Tables', { TableName: 'batches' });
 
     const result = await tableRequest('POST', '/batches', entity);
     if (result.status >= 400) {
@@ -59,7 +68,7 @@ module.exports = async function (context, req) {
     context.res = {
       status: 200,
       headers: HEADERS,
-      body: { success: true, batch: { id: batchId, name, courses, expiresAt, createdAt: entity.createdAt, status: 'active' } }
+      body: { success: true, batch: { id: batchId, name, batchCode, courseId, maxSize: entity.maxSize, expiresAt, createdAt: entity.createdAt, status: 'active' } }
     };
   } catch (err) {
     context.log.error('Create batch error:', err.message);

@@ -42,21 +42,29 @@ module.exports = async function (context, req) {
     const membersResult = await tableRequest('GET', '/batchmembers()');
     const allMembers = (membersResult.body && membersResult.body.value) || [];
 
-    // Build member counts per batch
+    // Build member counts and enrolled counts per batch
     const memberCounts = {};
+    const enrolledCounts = {};
     allMembers.forEach(m => {
       memberCounts[m.PartitionKey] = (memberCounts[m.PartitionKey] || 0) + 1;
+      if (m.enrolled === true || m.enrolled === 'true') {
+        enrolledCounts[m.PartitionKey] = (enrolledCounts[m.PartitionKey] || 0) + 1;
+      }
     });
 
     const now = new Date();
     const result = batches.map(b => ({
       id: b.RowKey,
       name: b.name,
-      courses: b.courses,
+      batchCode: b.batchCode || '',
+      courseId: b.courseId || '',
+      courses: b.courses || '',
+      maxSize: b.maxSize || 0,
       expiresAt: b.expiresAt,
       createdAt: b.createdAt,
       status: new Date(b.expiresAt) > now ? 'active' : 'expired',
-      memberCount: memberCounts[b.RowKey] || 0
+      memberCount: memberCounts[b.RowKey] || 0,
+      enrolledCount: enrolledCounts[b.RowKey] || 0
     }));
 
     context.res = {
