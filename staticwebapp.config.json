@@ -49,10 +49,6 @@
       "allowedRoles": ["anonymous"]
     },
     {
-      "route": "/api/enrollstudent",
-      "allowedRoles": ["anonymous"]
-    },
-    {
       "route": "/api/createbatch",
       "allowedRoles": ["anonymous"]
     },

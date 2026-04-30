@@ -2554,10 +2554,6 @@ html {
   padding-top: 80px;
 }
 
-.admin-container {
-  padding: 32px;
-}
-
 .admin-title {
   font-size: 1.6rem;
   font-weight: 700;
@@ -3371,9 +3367,9 @@ body:not(.app-mode) .admin-nav-btn {
   }
 }
 
-/* ============ ENROLLMENT & BATCH MANAGEMENT ============ */
+/* ============ BATCH MANAGEMENT ============ */
 
-.enroll-form, .batch-create-form {
+.batch-create-form {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -3381,7 +3377,6 @@ body:not(.app-mode) .admin-nav-btn {
   margin-bottom: 16px;
 }
 
-.enroll-form .admin-input,
 .batch-create-form .admin-input {
   flex: 1;
   min-width: 180px;
@@ -3409,60 +3404,6 @@ body:not(.app-mode) .admin-nav-btn {
   padding: 10px 14px;
   border-radius: 8px;
   font-size: 0.95rem;
-}
-
-.enroll-credentials-card {
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.25);
-  border-radius: 12px;
-  padding: 20px;
-  margin-top: 12px;
-}
-
-.enroll-credentials-card h3 {
-  margin: 0 0 14px 0;
-  font-size: 1.05rem;
-  color: #10b981;
-}
-
-.cred-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 0;
-  font-size: 0.95rem;
-}
-
-.cred-label {
-  color: rgba(255,255,255,0.5);
-  min-width: 80px;
-  font-weight: 500;
-}
-
-.cred-value {
-  color: #fff;
-  background: rgba(255,255,255,0.06);
-  padding: 4px 12px;
-  border-radius: 6px;
-  font-family: 'Courier New', monospace;
-  letter-spacing: 0.5px;
-}
-
-.copy-creds-btn {
-  margin-top: 14px;
-  background: linear-gradient(135deg, #6c3ce0, #06b6d4);
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 600;
-  transition: opacity 0.2s;
-}
-
-.copy-creds-btn:hover {
-  opacity: 0.85;
 }
 
 .batch-grid {
