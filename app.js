@@ -45,6 +45,89 @@ const trackEvent = (event, data = {}) => {
   } catch { /* never block UI */ }
 };
 
+// ===============================================
+//  ROUTING
+// ===============================================
+const navigate = (path, replace = false) => {
+  if (replace) {
+    history.replaceState({ path }, '', path);
+  } else {
+    history.pushState({ path }, '', path);
+  }
+  routeTo(path);
+};
+
+const routeTo = (path) => {
+  const clean = path.replace(/\/+$/, '') || '/';
+  const isLoggedIn = !!state.currentUser;
+
+  // Course detail with week: /course/week-N
+  const courseWeekMatch = clean.match(/^\/course\/(week-\d+)$/);
+  if (courseWeekMatch) {
+    if (!isLoggedIn) { navigate('/', true); return; }
+    state.currentWeekId = courseWeekMatch[1];
+    state.currentView = 'course';
+    hideAllViews();
+    byId('course-view').style.display = 'block';
+    const week = findWeek(courseWeekMatch[1]);
+    if (week) {
+      renderSidebar(week);
+      const firstLesson = getFirstIncompleteLesson(week);
+      if (firstLesson) renderLesson(firstLesson.id);
+    }
+    return;
+  }
+
+  switch (clean) {
+    case '/':
+      if (isLoggedIn) { navigate('/dashboard', true); return; }
+      hideAllViews();
+      byId('landing-view').style.display = '';
+      window.scrollTo(0, 0);
+      if (typeof setupScrollReveal === 'function') setupScrollReveal();
+      break;
+    case '/dashboard':
+      if (!isLoggedIn) { navigate('/', true); return; }
+      state.currentView = 'dashboard';
+      hideAllViews();
+      byId('dashboard-view').style.display = 'block';
+      renderDashboard();
+      break;
+    case '/admin':
+      if (!isLoggedIn) { navigate('/', true); return; }
+      if (state.currentUser.email !== 'officialtechwaveteam@gmail.com') { navigate('/dashboard', true); return; }
+      state.currentView = 'admin';
+      hideAllViews();
+      byId('admin-view').style.display = 'block';
+      renderAdminView();
+      loadAnalytics();
+      loadLeads();
+      loadBatches();
+      loadCourseInterests();
+      break;
+    case '/community':
+      if (!isLoggedIn) { navigate('/', true); return; }
+      state.currentView = 'community';
+      hideAllViews();
+      byId('community-view').style.display = 'block';
+      loadDiscussions(communityCurrentCourse);
+      break;
+    case '/course':
+      if (!isLoggedIn) { navigate('/', true); return; }
+      state.currentView = 'course-detail';
+      hideAllViews();
+      byId('course-detail-view').style.display = 'block';
+      renderCourseDetail();
+      break;
+    default:
+      navigate('/', true);
+  }
+};
+
+window.addEventListener('popstate', () => {
+  routeTo(window.location.pathname);
+});
+
 const showAuthModal = (mode) => {
   authMode = mode || 'login';
   const modal = byId('auth-modal');
@@ -165,45 +248,60 @@ const handleAuth = async (e) => {
 const checkAuth = async () => {
   const token = localStorage.getItem('lms_token');
   const savedUser = localStorage.getItem('lms_user');
-  
+
+  // Step 1: synchronous pre-render — if we have a saved user, immediately go to app mode
+  // This prevents the flash of landing page on refresh
   if (token && savedUser) {
+    try {
+      const cachedUser = JSON.parse(savedUser);
+      state.currentUser = cachedUser;
+      document.body.classList.add('app-mode');
+      const landing = byId('landing-view');
+      if (landing) landing.style.display = 'none';
+      updateNavForUser(cachedUser);
+      // Render the current URL route immediately with cached user
+      routeTo(window.location.pathname);
+    } catch {}
+
+    // Step 2: async-validate token in background
     try {
       const res = await fetch('/api/me', {
         headers: { 'X-Auth-Token': token }
       });
       if (res.ok) {
         const data = await res.json();
-        showAppView(data.user);
+        state.currentUser = data.user;
+        localStorage.setItem('lms_user', JSON.stringify(data.user));
+        updateNavForUser(data.user);
+        // Re-route in case admin status changed
+        routeTo(window.location.pathname);
         return data.user;
       }
+      // Token invalid — clear and reroute to landing
+      localStorage.removeItem('lms_token');
+      localStorage.removeItem('lms_user');
+      state.currentUser = null;
+      document.body.classList.remove('app-mode');
+      const navLinks = byId('nav-links');
+      if (navLinks) navLinks.style.display = '';
+      navigate('/', true);
     } catch (e) {
-      // API not available (local dev) — use saved user
-      if (savedUser) {
-        showAppView(JSON.parse(savedUser));
-        return JSON.parse(savedUser);
-      }
+      // Network error — keep cached user, stay where we are
+      return JSON.parse(savedUser);
     }
-    // Token invalid — clear it
-    localStorage.removeItem('lms_token');
-    localStorage.removeItem('lms_user');
+    return null;
   }
-  
-  showLandingView();
+
+  // No saved auth — show landing or whatever route they're on
+  routeTo(window.location.pathname);
   return null;
 };
 
 const logout = () => {
   localStorage.removeItem('lms_token');
   localStorage.removeItem('lms_user');
-  document.body.classList.remove('app-mode');
-  byId('dashboard-view').style.display = 'none';
-  byId('course-view').style.display = 'none';
-  byId('course-detail-view').style.display = 'none';
-  byId('admin-view').style.display = 'none';
-  byId('community-view').style.display = 'none';
   state.currentUser = null;
-  const landing = byId('landing-view');
-  if (landing) landing.style.display = '';
+  document.body.classList.remove('app-mode');
   // Restore nav
   const navLinks = byId('nav-links');
   if (navLinks) navLinks.style.display = '';
@@ -216,22 +314,16 @@ const logout = () => {
       <i class="fas fa-user-plus"></i> Sign Up
     </button>
   `;
+  navigate('/');
   showToast('Signed out successfully', 'success');
 };
 
-const showAppView = (user) => {
-  state.currentUser = user;
-  document.body.classList.add('app-mode');
-  const landing = byId('landing-view');
-  if (landing) landing.style.display = 'none';
-  byId('dashboard-view').style.display = '';
-  
-  // Update nav for app mode
+const updateNavForUser = (user) => {
   const navLinks = byId('nav-links');
   if (navLinks) navLinks.style.display = 'none';
-  
-  // Update auth section with user info
+
   const section = byId('auth-section');
+  if (!section) return;
   const initials = (user.name || 'U').substring(0, 2).toUpperCase();
   section.innerHTML = `
     <div class="user-info">
@@ -241,14 +333,12 @@ const showAppView = (user) => {
     <button class="logout-btn" onclick="logout()">Sign Out</button>
   `;
 
-  // Community button for all logged-in users
   const communityBtn = document.createElement('button');
   communityBtn.className = 'community-nav-btn';
   communityBtn.innerHTML = '<i class="fas fa-comments"></i> Community';
   communityBtn.onclick = navigateToCommunity;
   section.appendChild(communityBtn);
 
-  // Show admin button if admin user
   if (user.email === 'officialtechwaveteam@gmail.com') {
     const adminBtn = document.createElement('button');
     adminBtn.className = 'admin-nav-btn';
@@ -256,6 +346,15 @@ const showAppView = (user) => {
     adminBtn.onclick = navigateToAdmin;
     section.appendChild(adminBtn);
   }
+};
+
+const showAppView = (user) => {
+  state.currentUser = user;
+  document.body.classList.add('app-mode');
+  const landing = byId('landing-view');
+  if (landing) landing.style.display = 'none';
+  updateNavForUser(user);
+  navigate('/dashboard');
 };
 
 const showLandingView = () => {
@@ -628,10 +727,7 @@ const navigateToCourseDetail = () => {
     showToast('You do not have access to this course. Please contact your administrator.', 'error');
     return;
   }
-  state.currentView = 'course-detail';
-  hideAllViews();
-  byId('course-detail-view').style.display = 'block';
-  renderCourseDetail();
+  navigate('/course');
   trackEvent('course_start');
 };
 
@@ -639,34 +735,15 @@ const navigateToCourseDetail = () => {
 //  COURSE VIEW RENDERING
 // ===============================================
 const navigateToCourse = (weekId) => {
-  const week = findWeek(weekId);
-  if (!week) return;
-  state.currentView = 'course';
-  state.currentWeekId = weekId;
-  hideAllViews();
-  byId('course-view').style.display = 'block';
-  renderSidebar(week);
-  const firstLesson = getFirstIncompleteLesson(week);
-  if (firstLesson) renderLesson(firstLesson.id);
+  navigate('/course/' + weekId);
 };
 
 const navigateToDashboard = () => {
-  state.currentView = 'dashboard';
-  state.currentWeekId = null;
-  state.currentLessonId = null;
-  hideAllViews();
-  byId('dashboard-view').style.display = 'block';
-  renderDashboard();
+  navigate('/dashboard');
 };
 
 const navigateHome = () => {
-  if (state.currentUser) {
-    navigateToDashboard();
-  } else {
-    byId('landing-view').style.display = '';
-    hideAllViews();
-    window.scrollTo(0, 0);
-  }
+  navigate(state.currentUser ? '/dashboard' : '/');
 };
 
 const switchAdminTab = (btn) => {
@@ -688,14 +765,7 @@ const switchAdminTab = (btn) => {
 };
 
 const navigateToAdmin = () => {
-  state.currentView = 'admin';
-  hideAllViews();
-  byId('admin-view').style.display = 'block';
-  renderAdminView();
-  loadAnalytics();
-  loadLeads();
-  loadBatches();
-  loadCourseInterests();
+  navigate('/admin');
 };
 
 const renderAdminView = async () => {
@@ -1874,10 +1944,7 @@ const setupEventListeners = () => {
 let communityCurrentCourse = 'ai-beginner';
 
 const navigateToCommunity = () => {
-  state.currentView = 'community';
-  hideAllViews();
-  byId('community-view').style.display = 'block';
-  loadDiscussions(communityCurrentCourse);
+  navigate('/community');
 };
 
 const timeAgo = (dateStr) => {
@@ -2079,13 +2146,34 @@ const postReply = async (threadId, courseId) => {
 // ===============================================
 //  INIT
 // ===============================================
+
+// Synchronous pre-render: if user is logged in, immediately hide landing
+// and add app-mode class BEFORE the DOM paints anything.
+// This eliminates the flash of landing page on refresh.
+(function preRender() {
+  try {
+    const token = localStorage.getItem('lms_token');
+    const savedUser = localStorage.getItem('lms_user');
+    if (token && savedUser) {
+      document.documentElement.classList.add('preauth-app');
+    }
+  } catch {}
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
   loadProgress();
-  renderDashboard();
   setupEventListeners();
-  // Hide dashboard initially until auth check
-  byId('dashboard-view').style.display = 'none';
+  // Hide all views initially — checkAuth/routeTo will show the right one
+  ['dashboard-view', 'course-detail-view', 'course-view', 'admin-view', 'community-view'].forEach(id => {
+    const el = byId(id);
+    if (el) el.style.display = 'none';
+  });
+  // If preauth was set, also hide landing immediately
+  if (document.documentElement.classList.contains('preauth-app')) {
+    const landing = byId('landing-view');
+    if (landing) landing.style.display = 'none';
+    document.body.classList.add('app-mode');
+  }
   checkAuth();
-  // Track page view
   trackEvent('page_view', { referrer: document.referrer || '' });
 });

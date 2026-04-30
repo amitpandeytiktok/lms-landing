@@ -9,6 +9,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="style.css">
+  <script>
+    // Synchronous pre-auth check — runs BEFORE body renders to prevent flash
+    try {
+      if (localStorage.getItem('lms_token') && localStorage.getItem('lms_user')) {
+        document.documentElement.classList.add('preauth-app');
+      }
+    } catch (e) {}
+  </script>
 </head>
 <body>
 
@@ -211,16 +219,6 @@
 
   <!-- ==================== DASHBOARD VIEW ==================== -->
   <div id="dashboard-view">
-    <!-- Batch Code Entry Bar -->
-    <div class="batch-code-bar card">
-      <div class="batch-code-bar-inner">
-        <i class="fas fa-key batch-code-icon"></i>
-        <span>Have a batch code?</span>
-        <input type="text" id="dashboard-batch-code" placeholder="Enter batch code (e.g. AI-2026-B1)" class="batch-code-input">
-        <button class="batch-code-submit" onclick="enrollWithBatchCode()"><i class="fas fa-unlock"></i> Enroll</button>
-      </div>
-    </div>
-
     <!-- Enrolled Courses -->
     <div class="courses-container card" id="enrolled-courses-section">
       <div class="courses-header">
@@ -235,6 +233,16 @@
         <h2>🔍 Explore Courses</h2>
       </div>
       <div id="explore-courses-grid" class="courses-grid"></div>
+    </div>
+
+    <!-- Batch Code Entry Bar -->
+    <div class="batch-code-bar card">
+      <div class="batch-code-bar-inner">
+        <i class="fas fa-key batch-code-icon"></i>
+        <span>Have a batch code?</span>
+        <input type="text" id="dashboard-batch-code" placeholder="Enter batch code (e.g. AI-2026-B1)" class="batch-code-input">
+        <button class="batch-code-submit" onclick="enrollWithBatchCode()"><i class="fas fa-unlock"></i> Enroll</button>
+      </div>
     </div>
   </div>
 
