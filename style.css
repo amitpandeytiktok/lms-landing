@@ -108,20 +108,25 @@ body.app-mode .top-nav {
 }
 
 .signup-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 8px 20px;
   border-radius: 8px;
-  border: 2px solid #a855f7;
-  background: transparent;
-  color: #a855f7;
-  font-weight: 600;
+  border: none;
+  background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+  color: #fff;
+  font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s;
   font-size: 14px;
+  box-shadow: 0 2px 10px rgba(168, 85, 247, 0.4);
 }
 
 .signup-btn:hover {
-  background: #a855f7;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(236, 72, 153, 0.55);
   color: #fff;
 }
 
@@ -370,15 +375,15 @@ body.app-mode .signup-btn {
 }
 
 .nav-links a {
-  color: rgba(255,255,255,0.75);
+  color: rgba(255, 255, 255, 0.92);
   text-decoration: none;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   transition: color 0.2s;
 }
 
 .nav-links a:hover {
-  color: #fff;
+  color: #fbbf24;
 }
 
 /* ============================================
