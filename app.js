@@ -282,6 +282,7 @@ const checkAuth = async () => {
       localStorage.removeItem('lms_user');
       state.currentUser = null;
       document.body.classList.remove('app-mode');
+      document.documentElement.classList.remove('preauth-app');
       const navLinks = byId('nav-links');
       if (navLinks) navLinks.style.display = '';
       navigate('/', true);
@@ -302,6 +303,7 @@ const logout = () => {
   localStorage.removeItem('lms_user');
   state.currentUser = null;
   document.body.classList.remove('app-mode');
+  document.documentElement.classList.remove('preauth-app');
   // Restore nav
   const navLinks = byId('nav-links');
   if (navLinks) navLinks.style.display = '';
