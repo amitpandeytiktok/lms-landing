@@ -63,6 +63,14 @@
     {
       "route": "/api/batchmembers",
       "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/submitlead",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/listleads",
+      "allowedRoles": ["anonymous"]
     }
   ],
   "navigationFallback": {

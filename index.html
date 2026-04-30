@@ -164,8 +164,27 @@
       </div>
       <div class="cta-content">
         <h2>Ready to Start Your <span class="gradient-text">AI Journey</span>?</h2>
-        <p>Sign in to access your courses and earn your AI Champion Certificate.</p>
-        <button class="cta-primary cta-large" onclick="showAuthModal('login')"><i class="fas fa-rocket"></i> Sign In</button>
+        <p>Get in touch with us to learn more about our programs.</p>
+        <div class="cta-buttons-row">
+          <a href="https://chat.whatsapp.com/Cc2YP2VX0KZ5276L3lnKUz" target="_blank" rel="noopener noreferrer" class="cta-whatsapp"><i class="fab fa-whatsapp"></i> Join WhatsApp Group</a>
+          <button class="cta-primary cta-large" onclick="showInterestForm()"><i class="fas fa-paper-plane"></i> I'm Interested</button>
+        </div>
+        <!-- Interest Form (hidden by default) -->
+        <div id="interest-form-container" class="interest-form-container" style="display:none">
+          <form id="interest-form" onsubmit="submitInterest(event)">
+            <h3>Tell us about yourself</h3>
+            <div class="interest-field">
+              <input type="text" id="interest-name" placeholder="Full Name">
+            </div>
+            <div class="interest-field">
+              <input type="email" id="interest-email" placeholder="Email Address">
+            </div>
+            <div class="interest-field">
+              <input type="tel" id="interest-phone" placeholder="Phone Number">
+            </div>
+            <button type="submit" class="cta-primary" id="interest-submit-btn"><span id="interest-submit-text">Submit</span><i class="fas fa-spinner fa-spin" id="interest-spinner" style="display:none"></i></button>
+          </form>
+        </div>
       </div>
     </section>
 
@@ -344,6 +363,12 @@
       <div id="batch-list" style="margin-top:20px;">
         <p style="text-align:center;padding:20px;color:rgba(255,255,255,0.5);">Loading batches...</p>
       </div>
+    </div>
+
+    <!-- Leads / Interest Forms -->
+    <div class="admin-container card">
+      <h2 class="admin-title">📋 Interest Form Submissions</h2>
+      <div id="admin-leads-list"><p style="text-align:center;padding:20px;">Loading leads...</p></div>
     </div>
 
     <!-- User Management -->

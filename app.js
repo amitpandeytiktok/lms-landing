@@ -455,6 +455,7 @@ const navigateToAdmin = () => {
   byId('admin-view').style.display = 'block';
   renderAdminView();
   loadAnalytics();
+  loadLeads();
   loadBatches();
 };
 
@@ -581,6 +582,39 @@ const copyCredentials = (email, password) => {
   }).catch(() => {
     showToast('Failed to copy', 'error');
   });
+};
+
+// --------------- LEADS MANAGEMENT ---------------
+const loadLeads = async () => {
+  const container = byId('admin-leads-list');
+  try {
+    const token = localStorage.getItem('lms_token');
+    const res = await fetch('/api/listleads', {
+      headers: { 'X-Auth-Token': token }
+    });
+    if (!res.ok) throw new Error('Failed');
+    const data = await res.json();
+    const leads = data.leads || [];
+    if (leads.length === 0) {
+      container.innerHTML = '<p style="text-align:center;padding:20px;color:#888;">No submissions yet.</p>';
+      return;
+    }
+    container.innerHTML = `
+      <table class="admin-table" style="width:100%">
+        <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Date</th></tr></thead>
+        <tbody>${leads.map(l => `
+          <tr>
+            <td>${l.name || '—'}</td>
+            <td>${l.email || '—'}</td>
+            <td>${l.phone || '—'}</td>
+            <td>${l.createdAt ? new Date(l.createdAt).toLocaleDateString() : '—'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <p style="text-align:right;padding:8px;color:#888;font-size:0.85rem;">${leads.length} total submission${leads.length !== 1 ? 's' : ''}</p>`;
+  } catch {
+    container.innerHTML = '<p style="color:#ff6b6b;text-align:center;padding:20px;">Error loading leads.</p>';
+  }
 };
 
 const adminCreateBatch = async () => {
@@ -1275,6 +1309,57 @@ const generateMockResponse = (task, userPrompt) => {
       <li><strong>Recommendations:</strong> Start with a minimum viable approach, gather feedback early, and refine based on results.</li>
     </ol>
     <p>This framework provides a solid foundation — adjust the specifics based on your unique context and constraints.</p>`;
+};
+
+// ===============================================
+//  INTEREST FORM (Landing Page)
+// ===============================================
+const showInterestForm = () => {
+  const container = byId('interest-form-container');
+  container.style.display = container.style.display === 'none' ? 'block' : 'none';
+  if (container.style.display === 'block') {
+    byId('interest-name').focus();
+  }
+};
+
+const submitInterest = async (e) => {
+  e.preventDefault();
+  const name = byId('interest-name').value.trim();
+  const email = byId('interest-email').value.trim();
+  const phone = byId('interest-phone').value.trim();
+
+  if (!name && !email && !phone) {
+    showToast('Please fill in at least one field.', 'error');
+    return;
+  }
+
+  const btn = byId('interest-submit-btn');
+  const text = byId('interest-submit-text');
+  const spinner = byId('interest-spinner');
+  btn.disabled = true;
+  text.style.display = 'none';
+  spinner.style.display = 'inline-block';
+
+  try {
+    const res = await fetch('/api/submitlead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, phone })
+    });
+    if (res.ok) {
+      showToast('Thank you for your interest! We\'ll be in touch soon. 🎉', 'success');
+      byId('interest-form').reset();
+      byId('interest-form-container').style.display = 'none';
+    } else {
+      showToast('Something went wrong. Please try again.', 'error');
+    }
+  } catch {
+    showToast('Network error. Please try again.', 'error');
+  } finally {
+    btn.disabled = false;
+    text.style.display = '';
+    spinner.style.display = 'none';
+  }
 };
 
 // ===============================================
