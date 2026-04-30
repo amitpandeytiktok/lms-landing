@@ -1071,6 +1071,22 @@ body.app-mode {
   color: rgba(255,255,255,0.4);
 }
 
+.cta-contact-email {
+  margin-top: 20px;
+  color: rgba(255,255,255,0.6);
+  font-size: 0.95rem;
+}
+
+.cta-contact-email a {
+  color: #a78bfa;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.cta-contact-email a:hover {
+  text-decoration: underline;
+}
+
 /* Footer */
 .landing-footer {
   border-top: 1px solid rgba(255,255,255,0.06);
