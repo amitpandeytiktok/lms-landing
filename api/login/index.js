@@ -99,7 +99,7 @@ module.exports = async function (context, req) {
     context.res = {
       status: 200,
       headers: HEADERS,
-      body: { token, user: { name: user.name, email: user.email || '', phone: user.phone || '', courseAccess: mergedAccess } }
+      body: { token, user: { name: user.name, email: user.email || user.RowKey, phone: user.phone || '', courseAccess: mergedAccess } }
     };
   } catch (err) {
     context.log.error('Login error:', err.message);
