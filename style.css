@@ -72,6 +72,14 @@ body.app-mode .top-nav {
   font-size: 22px;
 }
 
+.brand-logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  object-fit: cover;
+  display: block;
+}
+
 .auth-section {
   display: flex;
   align-items: center;
@@ -225,6 +233,18 @@ body.app-mode .signup-btn {
   font-size: 32px;
   color: #6c3ce0;
   margin-bottom: 16px;
+}
+
+.auth-modal-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  object-fit: cover;
+  margin-bottom: 16px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 4px 20px rgba(108, 60, 224, 0.3);
 }
 
 .auth-modal-header h2 {
@@ -1140,6 +1160,15 @@ body.app-mode .signup-btn {
 
 .footer-brand i {
   color: #6c3ce0;
+}
+
+.footer-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: cover;
+  vertical-align: middle;
+  margin-right: 4px;
 }
 
 .footer-text {
