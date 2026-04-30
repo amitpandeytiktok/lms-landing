@@ -677,6 +677,14 @@ const switchAdminTab = (btn) => {
   document.querySelectorAll('.admin-tab-panel').forEach(p => p.classList.remove('active'));
   const panel = byId(btn.dataset.tab);
   if (panel) panel.classList.add('active');
+  // Refresh data on switch
+  switch (btn.dataset.tab) {
+    case 'admin-analytics': loadAnalytics(); break;
+    case 'admin-batches': loadBatches(); break;
+    case 'admin-leads': loadLeads(); break;
+    case 'admin-interests': loadCourseInterests(); break;
+    case 'admin-users': renderAdminView(); break;
+  }
 };
 
 const navigateToAdmin = () => {
