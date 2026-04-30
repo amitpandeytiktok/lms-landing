@@ -366,90 +366,98 @@
 
   <!-- ==================== ADMIN VIEW ==================== -->
   <div id="admin-view" style="display:none">
-    <button class="back-btn" onclick="navigateToDashboard()"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
-
-    <!-- Analytics Dashboard -->
-    <div class="analytics-section">
-      <h2 class="admin-title">📊 Analytics Dashboard</h2>
-      <div class="analytics-period">
-        <select id="analytics-days" onchange="loadAnalytics()">
-          <option value="7" selected>Last 7 days</option>
-          <option value="14">Last 14 days</option>
-          <option value="30">Last 30 days</option>
-        </select>
-        <button class="analytics-refresh-btn" onclick="loadAnalytics()"><i class="fas fa-sync-alt"></i> Refresh</button>
-      </div>
-      <div id="analytics-summary" class="analytics-summary-grid"></div>
-      <div class="analytics-charts-row">
-        <div class="analytics-chart-card">
-          <h3>Daily Page Views</h3>
-          <div id="analytics-chart" class="analytics-bar-chart"></div>
+    <div class="admin-layout">
+      <!-- Sidebar Navigation -->
+      <nav class="admin-sidebar">
+        <button class="back-btn admin-back-btn" onclick="navigateToDashboard()"><i class="fas fa-arrow-left"></i> Dashboard</button>
+        <div class="admin-sidebar-menu">
+          <button class="admin-tab active" data-tab="admin-analytics" onclick="switchAdminTab(this)"><i class="fas fa-chart-bar"></i> Analytics</button>
+          <button class="admin-tab" data-tab="admin-batches" onclick="switchAdminTab(this)"><i class="fas fa-layer-group"></i> Batches</button>
+          <button class="admin-tab" data-tab="admin-leads" onclick="switchAdminTab(this)"><i class="fas fa-envelope-open-text"></i> Leads</button>
+          <button class="admin-tab" data-tab="admin-interests" onclick="switchAdminTab(this)"><i class="fas fa-hand-paper"></i> Course Interest</button>
+          <button class="admin-tab" data-tab="admin-users" onclick="switchAdminTab(this)"><i class="fas fa-users-cog"></i> Users</button>
         </div>
-      </div>
-      <div class="analytics-tables-row">
-        <div class="analytics-table-card">
-          <h3>🏆 Top Lessons</h3>
-          <div id="analytics-top-lessons"></div>
+      </nav>
+
+      <!-- Main Content Area -->
+      <div class="admin-content">
+
+        <!-- Analytics Tab -->
+        <div class="admin-tab-panel active" id="admin-analytics">
+          <div class="analytics-section">
+            <h2 class="admin-title">📊 Analytics Dashboard</h2>
+            <div class="analytics-period">
+              <select id="analytics-days" onchange="loadAnalytics()">
+                <option value="7" selected>Last 7 days</option>
+                <option value="14">Last 14 days</option>
+                <option value="30">Last 30 days</option>
+              </select>
+              <button class="analytics-refresh-btn" onclick="loadAnalytics()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+            <div id="analytics-summary" class="analytics-summary-grid"></div>
+            <div class="analytics-charts-row">
+              <div class="analytics-chart-card">
+                <h3>Daily Page Views</h3>
+                <div id="analytics-chart" class="analytics-bar-chart"></div>
+              </div>
+            </div>
+            <div class="analytics-tables-row">
+              <div class="analytics-table-card">
+                <h3>🏆 Top Lessons</h3>
+                <div id="analytics-top-lessons"></div>
+              </div>
+              <div class="analytics-table-card">
+                <h3>⚡ Recent Activity</h3>
+                <div id="analytics-recent" class="analytics-recent-list"></div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="analytics-table-card">
-          <h3>⚡ Recent Activity</h3>
-          <div id="analytics-recent" class="analytics-recent-list"></div>
+
+        <!-- Batches Tab -->
+        <div class="admin-tab-panel" id="admin-batches">
+          <h2 class="admin-title">📦 Batch Management</h2>
+          <div class="batch-create-form">
+            <input type="text" id="batch-name" placeholder="Batch Name (e.g. AI Bootcamp Batch 1)" class="admin-input">
+            <input type="text" id="batch-code" placeholder="Batch Code (e.g. AI-2026-B1)" class="admin-input">
+            <select id="batch-course" class="admin-input">
+              <option value="ai-beginner">AI Bootcamp Course</option>
+            </select>
+            <input type="number" id="batch-max-size" placeholder="Max Students" class="admin-input" min="1" value="30">
+            <div class="batch-date-field">
+              <label for="batch-expiry">Expiry Date:</label>
+              <input type="date" id="batch-expiry" class="admin-input">
+            </div>
+            <button class="grant-btn" onclick="adminCreateBatch()"><i class="fas fa-plus-circle"></i> Create Batch</button>
+          </div>
+          <div id="batch-list" style="margin-top:20px;">
+            <p style="text-align:center;padding:20px;color:#666;">Loading batches...</p>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Student Enrollment -->
-    <div class="admin-container card">
-      <h2 class="admin-title">🎓 Enroll Student</h2>
-      <div class="enroll-form">
-        <input type="text" id="enroll-name" placeholder="Student Name" class="admin-input">
-        <input type="email" id="enroll-email" placeholder="Student Email" class="admin-input">
-        <button class="grant-btn" onclick="adminEnrollStudent()"><i class="fas fa-user-plus"></i> Create Student Account</button>
-      </div>
-      <div id="enroll-result" style="display:none"></div>
-    </div>
-
-    <!-- Batch Management -->
-    <div class="admin-container card">
-      <h2 class="admin-title">📦 Batch Management</h2>
-      <div class="batch-create-form">
-        <input type="text" id="batch-name" placeholder="Batch Name (e.g. AI Bootcamp Batch 1)" class="admin-input">
-        <input type="text" id="batch-code" placeholder="Batch Code (e.g. AI-2026-B1)" class="admin-input">
-        <select id="batch-course" class="admin-input">
-          <option value="ai-beginner">AI Bootcamp Course</option>
-        </select>
-        <input type="number" id="batch-max-size" placeholder="Max Students" class="admin-input" min="1" value="30">
-        <div class="batch-date-field">
-          <label for="batch-expiry">Expiry Date:</label>
-          <input type="date" id="batch-expiry" class="admin-input">
+        <!-- Leads Tab -->
+        <div class="admin-tab-panel" id="admin-leads">
+          <h2 class="admin-title">📋 Interest Form Submissions</h2>
+          <div id="admin-leads-list"><p style="text-align:center;padding:20px;">Loading leads...</p></div>
         </div>
-        <button class="grant-btn" onclick="adminCreateBatch()"><i class="fas fa-plus-circle"></i> Create Batch</button>
-      </div>
-      <div id="batch-list" style="margin-top:20px;">
-        <p style="text-align:center;padding:20px;color:#666;">Loading batches...</p>
-      </div>
-    </div>
 
-    <!-- Leads / Interest Forms -->
-    <div class="admin-container card">
-      <h2 class="admin-title">📋 Interest Form Submissions</h2>
-      <div id="admin-leads-list"><p style="text-align:center;padding:20px;">Loading leads...</p></div>
-    </div>
+        <!-- Course Interest Tab -->
+        <div class="admin-tab-panel" id="admin-interests">
+          <h2 class="admin-title">🎯 Course Interest Requests</h2>
+          <div id="admin-course-interests"><p style="text-align:center;padding:20px;">Loading course interests...</p></div>
+        </div>
 
-    <!-- Course Interest Submissions -->
-    <div class="admin-container card">
-      <h2 class="admin-title">🎯 Course Interest Requests</h2>
-      <div id="admin-course-interests"><p style="text-align:center;padding:20px;">Loading course interests...</p></div>
-    </div>
+        <!-- Users Tab -->
+        <div class="admin-tab-panel" id="admin-users">
+          <h2 class="admin-title">🔧 User Management</h2>
+          <div class="admin-form">
+            <input type="email" id="admin-email-input" placeholder="User email" class="admin-input">
+            <button class="grant-btn" onclick="adminGrantAccess()">Grant Access</button>
+          </div>
+          <div id="admin-users-list"></div>
+        </div>
 
-    <!-- User Management -->
-    <div class="admin-container card">
-      <h2 class="admin-title">🔧 User Management</h2>
-      <div class="admin-form">
-        <input type="email" id="admin-email-input" placeholder="User email" class="admin-input">
-        <button class="grant-btn" onclick="adminGrantAccess()">Grant Access</button>
       </div>
-      <div id="admin-users-list"></div>
     </div>
   </div>
 

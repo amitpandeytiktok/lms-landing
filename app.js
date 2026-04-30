@@ -669,6 +669,16 @@ const navigateHome = () => {
   }
 };
 
+const switchAdminTab = (btn) => {
+  // Update sidebar buttons
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  // Update panels
+  document.querySelectorAll('.admin-tab-panel').forEach(p => p.classList.remove('active'));
+  const panel = byId(btn.dataset.tab);
+  if (panel) panel.classList.add('active');
+};
+
 const navigateToAdmin = () => {
   state.currentView = 'admin';
   hideAllViews();
@@ -757,53 +767,21 @@ const adminRevokeAccess = async (email) => {
 
 // --------------- ENROLLMENT & BATCH MANAGEMENT ---------------
 
-const generatePassword = () => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let pw = '';
-  for (let i = 0; i < 8; i++) pw += chars.charAt(Math.floor(Math.random() * chars.length));
-  return pw;
-};
+let cachedUsers = null;
 
-const adminEnrollStudent = async () => {
-  const name = byId('enroll-name').value.trim();
-  const email = byId('enroll-email').value.trim();
-  if (!name || !email) { showToast('Please enter name and email', 'error'); return; }
-  const password = generatePassword();
+const loadRegisteredUsers = async () => {
+  if (cachedUsers) return cachedUsers;
   try {
     const token = localStorage.getItem('lms_token');
-    const res = await fetch('/api/enrollstudent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
-      body: JSON.stringify({ name, email, password })
-    });
+    const res = await fetch('/api/listusers', { headers: { 'X-Auth-Token': token } });
+    if (!res.ok) return [];
     const data = await res.json();
-    if (!res.ok) { showToast(data.error || 'Failed to enroll student', 'error'); return; }
-    byId('enroll-name').value = '';
-    byId('enroll-email').value = '';
-    const resultEl = byId('enroll-result');
-    resultEl.style.display = 'block';
-    resultEl.innerHTML = `
-      <div class="enroll-credentials-card">
-        <h3><i class="fas fa-check-circle" style="color:#10b981"></i> Student Account Created</h3>
-        <div class="cred-row"><span class="cred-label">Email:</span> <span class="cred-value" id="cred-email">${email}</span></div>
-        <div class="cred-row"><span class="cred-label">Password:</span> <span class="cred-value" id="cred-password">${password}</span></div>
-        <button class="copy-creds-btn" onclick="copyCredentials('${email}', '${password}')"><i class="fas fa-copy"></i> Copy Credentials</button>
-      </div>`;
-    showToast('Student enrolled successfully!', 'success');
-    renderAdminView();
-  } catch (err) {
-    showToast('Failed to enroll student', 'error');
-  }
+    cachedUsers = data.users || [];
+    return cachedUsers;
+  } catch { return []; }
 };
 
-const copyCredentials = (email, password) => {
-  const text = `Email: ${email}\nPassword: ${password}`;
-  navigator.clipboard.writeText(text).then(() => {
-    showToast('Credentials copied to clipboard!', 'success');
-  }).catch(() => {
-    showToast('Failed to copy', 'error');
-  });
-};
+const invalidateUserCache = () => { cachedUsers = null; };
 
 // --------------- LEADS MANAGEMENT ---------------
 const loadLeads = async () => {
@@ -950,8 +928,11 @@ const loadBatches = async () => {
           <div class="batch-card-actions">
             <button class="batch-toggle-btn" onclick="toggleBatchMembers('${b.id}')"><i class="fas fa-chevron-down"></i> Members</button>
             <div class="batch-add-member">
-              <input type="email" id="add-member-${b.id}" placeholder="Student email" class="admin-input batch-member-input">
-              <button class="grant-btn batch-add-btn" onclick="addBatchMember('${b.id}')"><i class="fas fa-plus"></i> Add</button>
+              <div class="batch-user-search-wrap">
+                <input type="text" id="add-member-${b.id}" placeholder="Search by name, email or phone..." class="admin-input batch-member-input" autocomplete="off" oninput="showUserSuggestions('${b.id}', this.value)" onfocus="showUserSuggestions('${b.id}', this.value)">
+                <div class="batch-user-suggestions" id="suggestions-${b.id}"></div>
+              </div>
+              <button class="grant-btn batch-add-btn" onclick="addBatchMember('${b.id}')"><i class="fas fa-user-plus"></i> Pre-approve</button>
             </div>
           </div>
           <div class="batch-members-list" id="batch-members-${b.id}" style="display:none"></div>
@@ -963,6 +944,43 @@ const loadBatches = async () => {
     container.innerHTML = '<p style="color:red;text-align:center;padding:20px;">Error loading batches.</p>';
   }
 };
+
+const showUserSuggestions = async (batchId, query) => {
+  const sugEl = byId(`suggestions-${batchId}`);
+  if (!sugEl) return;
+  if (!query || query.length < 1) { sugEl.innerHTML = ''; sugEl.style.display = 'none'; return; }
+  const users = await loadRegisteredUsers();
+  const q = query.toLowerCase();
+  const matches = users.filter(u => {
+    return (u.name && u.name.toLowerCase().includes(q)) ||
+           (u.email && u.email.toLowerCase().includes(q)) ||
+           (u.phone && u.phone.includes(q));
+  }).slice(0, 8);
+  if (matches.length === 0) { sugEl.innerHTML = '<div class="sug-empty">No matching users</div>'; sugEl.style.display = 'block'; return; }
+  sugEl.innerHTML = matches.map(u => {
+    const identifier = u.email || (u.phone ? 'phone:' + u.phone.replace(/[^0-9+]/g, '') : '');
+    const label = `${u.name || '—'}` + (u.email ? ` · ${u.email}` : '') + (u.phone ? ` · ${u.phone}` : '');
+    return `<div class="sug-item" onclick="selectUserForBatch('${batchId}', '${identifier.replace(/'/g, "\\'")}')">
+      <span class="sug-name">${u.name || '—'}</span>
+      <span class="sug-detail">${u.email || ''}${u.email && u.phone ? ' · ' : ''}${u.phone || ''}</span>
+    </div>`;
+  }).join('');
+  sugEl.style.display = 'block';
+};
+
+const selectUserForBatch = (batchId, identifier) => {
+  const input = byId(`add-member-${batchId}`);
+  if (input) input.value = identifier;
+  const sugEl = byId(`suggestions-${batchId}`);
+  if (sugEl) { sugEl.innerHTML = ''; sugEl.style.display = 'none'; }
+};
+
+// Close suggestions on outside click
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.batch-user-search-wrap')) {
+    document.querySelectorAll('.batch-user-suggestions').forEach(el => { el.innerHTML = ''; el.style.display = 'none'; });
+  }
+});
 
 const toggleBatchMembers = async (batchId) => {
   const el = byId(`batch-members-${batchId}`);
@@ -979,11 +997,16 @@ const toggleBatchMembers = async (batchId) => {
         el.innerHTML = '<p style="padding:10px;color:#999;">No members in this batch.</p>';
         return;
       }
-      let html = '<table class="batch-members-table"><thead><tr><th>Name</th><th>Email</th><th>Added</th><th></th></tr></thead><tbody>';
+      let html = '<table class="batch-members-table"><thead><tr><th>Name</th><th>Email/Phone</th><th>Status</th><th>Added</th><th></th></tr></thead><tbody>';
       members.forEach(m => {
+        const enrolled = m.enrolled === true || m.enrolled === 'true';
+        const statusHtml = enrolled
+          ? '<span class="member-status enrolled"><i class="fas fa-check-circle"></i> Enrolled</span>'
+          : '<span class="member-status pre-approved"><i class="fas fa-clock"></i> Pre-approved</span>';
         html += `<tr>
           <td>${m.studentName || '—'}</td>
           <td>${m.email}</td>
+          <td>${statusHtml}</td>
           <td>${m.addedAt ? new Date(m.addedAt).toLocaleDateString() : '—'}</td>
           <td><button class="revoke-btn batch-remove-btn" onclick="removeBatchMember('${batchId}','${m.email}')"><i class="fas fa-times"></i></button></td>
         </tr>`;
@@ -1000,14 +1023,18 @@ const toggleBatchMembers = async (batchId) => {
 
 const addBatchMember = async (batchId) => {
   const input = byId(`add-member-${batchId}`);
-  const email = input ? input.value.trim() : '';
-  if (!email) { showToast('Please enter a student email', 'error'); return; }
+  const identifier = input ? input.value.trim() : '';
+  if (!identifier) { showToast('Please search and select a student', 'error'); return; }
+  // Look up name from cached users
+  const users = await loadRegisteredUsers();
+  const found = users.find(u => u.email === identifier || ('phone:' + (u.phone || '').replace(/[^0-9+]/g, '')) === identifier);
+  const studentName = found ? found.name : '';
   try {
     const token = localStorage.getItem('lms_token');
     const res = await fetch('/api/batchmembers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
-      body: JSON.stringify({ batchId, email, studentName: '' })
+      body: JSON.stringify({ batchId, email: identifier, studentName })
     });
     const data = await res.json();
     if (!res.ok) { showToast(data.error || 'Failed to add member', 'error'); return; }

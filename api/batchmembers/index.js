@@ -65,7 +65,8 @@ async function handleGet(context, req) {
       members: members.map(m => ({
         email: m.RowKey,
         studentName: m.studentName || '',
-        addedAt: m.addedAt || ''
+        addedAt: m.addedAt || '',
+        enrolled: m.enrolled === true || m.enrolled === 'true'
       }))
     }
   };
