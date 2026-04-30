@@ -13,12 +13,12 @@ module.exports = async function (context, req) {
     return;
   }
 
+  // Return 200 immediately — best-effort storage
+  context.res = { status: 200, headers: HEADERS, body: { ok: true } };
+
   try {
     const { event, data } = req.body || {};
-    if (!event) {
-      context.res = { status: 400, headers: HEADERS, body: { error: 'event required' } };
-      return;
-    }
+    if (!event) return;
 
     // Resolve userId from token if present
     let userId = 'anonymous';
@@ -45,22 +45,11 @@ module.exports = async function (context, req) {
       userId: userId
     };
 
-    // Ensure analytics table exists (no-op if it does)
-    const createRes = await tableRequest('POST', '/Tables', { TableName: 'analytics' });
-    const insertRes = await tableRequest('POST', '/analytics', entity);
+    // Ensure analytics table exists (no-op 409 if it does)
+    try { await tableRequest('POST', '/Tables', { TableName: 'analytics' }); } catch {}
 
-    context.res = {
-      status: 200,
-      headers: HEADERS,
-      body: {
-        ok: insertRes.status >= 200 && insertRes.status < 300,
-        createStatus: createRes.status,
-        insertStatus: insertRes.status,
-        insertBody: insertRes.body
-      }
-    };
+    await tableRequest('POST', '/analytics', entity);
   } catch (err) {
     context.log.error('Track event error:', err.message);
-    context.res = { status: 500, headers: HEADERS, body: { error: err.message } };
   }
 };
