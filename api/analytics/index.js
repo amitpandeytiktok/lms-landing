@@ -51,7 +51,8 @@ module.exports = async function (context, req) {
     try { await tableRequest('POST', '/Tables', { TableName: 'analytics' }); } catch {}
     for (const date of dates) {
       try {
-        const result = await tableRequest('GET', `/analytics()?$filter=PartitionKey eq '${date}'`);
+        const filter = encodeURIComponent(`PartitionKey eq '${date}'`);
+        const result = await tableRequest('GET', `/analytics()?$filter=${filter}`);
         if (result.body && result.body.value) {
           allEvents.push(...result.body.value);
         }
