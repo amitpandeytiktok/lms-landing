@@ -45,6 +45,9 @@ module.exports = async function (context, req) {
       userId: userId
     };
 
+    // Ensure analytics table exists (no-op if it does)
+    try { await tableRequest('POST', '/Tables', { TableName: 'analytics' }); } catch {}
+
     await tableRequest('POST', '/analytics', entity);
   } catch (err) {
     context.log.error('Track event error:', err.message);

@@ -47,6 +47,8 @@ module.exports = async function (context, req) {
 
     // Query analytics for each date partition
     const allEvents = [];
+    // Ensure analytics table exists before querying
+    try { await tableRequest('POST', '/Tables', { TableName: 'analytics' }); } catch {}
     for (const date of dates) {
       try {
         const result = await tableRequest('GET', `/analytics()?$filter=PartitionKey eq '${date}'`);
