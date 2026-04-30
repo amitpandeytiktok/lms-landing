@@ -13,12 +13,12 @@ module.exports = async function (context, req) {
     return;
   }
 
-  // Return 200 immediately — best-effort storage
-  context.res = { status: 200, headers: HEADERS, body: { ok: true } };
-
   try {
     const { event, data } = req.body || {};
-    if (!event) return;
+    if (!event) {
+      context.res = { status: 400, headers: HEADERS, body: { error: 'event required' } };
+      return;
+    }
 
     // Resolve userId from token if present
     let userId = 'anonymous';
@@ -32,7 +32,7 @@ module.exports = async function (context, req) {
     }
 
     const now = new Date();
-    const partitionKey = now.toISOString().slice(0, 10); // YYYY-MM-DD
+    const partitionKey = now.toISOString().slice(0, 10);
     const rowKey = `${now.getTime()}-${Math.random().toString(36).slice(2, 8)}`;
 
     const entity = {
@@ -46,10 +46,21 @@ module.exports = async function (context, req) {
     };
 
     // Ensure analytics table exists (no-op if it does)
-    try { await tableRequest('POST', '/Tables', { TableName: 'analytics' }); } catch {}
+    const createRes = await tableRequest('POST', '/Tables', { TableName: 'analytics' });
+    const insertRes = await tableRequest('POST', '/analytics', entity);
 
-    await tableRequest('POST', '/analytics', entity);
+    context.res = {
+      status: 200,
+      headers: HEADERS,
+      body: {
+        ok: insertRes.status >= 200 && insertRes.status < 300,
+        createStatus: createRes.status,
+        insertStatus: insertRes.status,
+        insertBody: insertRes.body
+      }
+    };
   } catch (err) {
     context.log.error('Track event error:', err.message);
+    context.res = { status: 500, headers: HEADERS, body: { error: err.message } };
   }
 };
