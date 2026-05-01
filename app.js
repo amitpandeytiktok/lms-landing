@@ -716,7 +716,7 @@ const renderCourseDetail = () => {
 };
 
 const hideAllViews = () => {
-  ['dashboard-view', 'course-detail-view', 'course-view', 'admin-view', 'community-view'].forEach(id => {
+  ['landing-view', 'dashboard-view', 'course-detail-view', 'course-view', 'admin-view', 'community-view'].forEach(id => {
     const el = byId(id);
     if (el) el.style.display = 'none';
   });
