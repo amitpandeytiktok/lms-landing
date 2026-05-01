@@ -875,7 +875,7 @@ const loadLeads = async () => {
     const data = await res.json();
     const leads = data.leads || [];
     if (leads.length === 0) {
-      container.innerHTML = '<p style="text-align:center;padding:20px;color:#888;">No submissions yet.</p>';
+      container.innerHTML = '<p style="text-align:center;padding:20px;color:#4b5563;">No submissions yet.</p>';
       return;
     }
     container.innerHTML = `
@@ -890,7 +890,7 @@ const loadLeads = async () => {
           </tr>`).join('')}
         </tbody>
       </table>
-      <p style="text-align:right;padding:8px;color:#888;font-size:0.85rem;">${leads.length} total submission${leads.length !== 1 ? 's' : ''}</p>`;
+      <p style="text-align:right;padding:8px;color:#4b5563;font-size:0.85rem;">${leads.length} total submission${leads.length !== 1 ? 's' : ''}</p>`;
   } catch {
     container.innerHTML = '<p style="color:#ff6b6b;text-align:center;padding:20px;">Error loading leads.</p>';
   }
@@ -908,7 +908,7 @@ const loadCourseInterests = async () => {
     if (!res.ok) throw new Error('Failed');
     const interests = await res.json();
     if (!interests || interests.length === 0) {
-      container.innerHTML = '<p style="text-align:center;padding:20px;color:#888;">No course interest requests yet.</p>';
+      container.innerHTML = '<p style="text-align:center;padding:20px;color:#4b5563;">No course interest requests yet.</p>';
       return;
     }
     container.innerHTML = `
@@ -925,7 +925,7 @@ const loadCourseInterests = async () => {
           </tr>`).join('')}
         </tbody>
       </table>
-      <p style="text-align:right;padding:8px;color:#888;font-size:0.85rem;">${interests.length} request${interests.length !== 1 ? 's' : ''}</p>`;
+      <p style="text-align:right;padding:8px;color:#4b5563;font-size:0.85rem;">${interests.length} request${interests.length !== 1 ? 's' : ''}</p>`;
   } catch {
     container.innerHTML = '<p style="color:#ff6b6b;text-align:center;padding:20px;">Error loading course interests.</p>';
   }
@@ -985,7 +985,7 @@ const loadBatches = async () => {
     const data = await res.json();
     const batches = data.batches || [];
     if (batches.length === 0) {
-      container.innerHTML = '<p style="text-align:center;padding:20px;color:#999;">No batches created yet.</p>';
+      container.innerHTML = '<p style="text-align:center;padding:20px;color:#4b5563;">No batches created yet.</p>';
       return;
     }
     let html = '<div class="batch-grid">';
@@ -1067,14 +1067,14 @@ const toggleBatchMembers = async (batchId) => {
   if (!el) return;
   if (el.style.display === 'none') {
     el.style.display = 'block';
-    el.innerHTML = '<p style="padding:10px;color:#999;">Loading...</p>';
+    el.innerHTML = '<p style="padding:10px;color:#4b5563;">Loading...</p>';
     try {
       const token = localStorage.getItem('lms_token');
       const res = await fetch(`/api/batchmembers?batchId=${encodeURIComponent(batchId)}`, { headers: { 'X-Auth-Token': token } });
       const data = await res.json();
       const members = data.members || [];
       if (members.length === 0) {
-        el.innerHTML = '<p style="padding:10px;color:#999;">No members in this batch.</p>';
+        el.innerHTML = '<p style="padding:10px;color:#4b5563;">No members in this batch.</p>';
         return;
       }
       let html = '<table class="batch-members-table"><thead><tr><th>Name</th><th>Email/Phone</th><th>Status</th><th>Added</th><th></th></tr></thead><tbody>';
@@ -1183,15 +1183,15 @@ const loadAnalytics = async () => {
 
 const renderAnalyticsSummary = (s) => {
   const cards = [
-    { label: 'Page Views', value: s.totalPageViews, icon: 'fa-eye', color: '#6c3ce0' },
-    { label: 'Signups', value: s.totalSignups, icon: 'fa-user-plus', color: '#10b981' },
-    { label: 'Logins', value: s.totalLogins, icon: 'fa-sign-in-alt', color: '#3b82f6' },
-    { label: 'Course Starts', value: s.totalCourseStarts, icon: 'fa-play-circle', color: '#f59e0b' },
-    { label: 'Lesson Views', value: s.totalLessonStarts, icon: 'fa-book-open', color: '#ec4899' },
-    { label: 'Narrations', value: s.totalNarrationPlays, icon: 'fa-headphones', color: '#8b5cf6' },
-    { label: 'Unique Visitors', value: s.uniqueVisitors, icon: 'fa-users', color: '#06b6d4' },
-    { label: 'Registered Users', value: s.totalRegisteredUsers, icon: 'fa-user-check', color: '#14b8a6' },
-    { label: 'With Access', value: s.usersWithAccess, icon: 'fa-unlock', color: '#a855f7' }
+    { label: 'Page Views', value: s.totalPageViews, icon: 'fa-eye', color: '#a78bfa' },
+    { label: 'Signups', value: s.totalSignups, icon: 'fa-user-plus', color: '#34d399' },
+    { label: 'Logins', value: s.totalLogins, icon: 'fa-sign-in-alt', color: '#60a5fa' },
+    { label: 'Course Starts', value: s.totalCourseStarts, icon: 'fa-play-circle', color: '#fbbf24' },
+    { label: 'Lesson Views', value: s.totalLessonStarts, icon: 'fa-book-open', color: '#f472b6' },
+    { label: 'Narrations', value: s.totalNarrationPlays, icon: 'fa-headphones', color: '#c4b5fd' },
+    { label: 'Unique Visitors', value: s.uniqueVisitors, icon: 'fa-users', color: '#22d3ee' },
+    { label: 'Registered Users', value: s.totalRegisteredUsers, icon: 'fa-user-check', color: '#2dd4bf' },
+    { label: 'With Access', value: s.usersWithAccess, icon: 'fa-unlock', color: '#c4b5fd' }
   ];
   byId('analytics-summary').innerHTML = cards.map(c => `
     <div class="analytics-card" style="border-left: 4px solid ${c.color}">
@@ -1549,7 +1549,7 @@ const renderTabContent = (tab, lesson) => {
     const items = (lesson.objectives || []).map(obj =>
       `<li><i class="fas fa-check-circle"></i> ${obj}</li>`
     ).join('');
-    el.innerHTML = items ? `<ul class="objectives-list">${items}</ul>` : '<p style="color:#999">No objectives listed.</p>';
+    el.innerHTML = items ? `<ul class="objectives-list">${items}</ul>` : '<p style="color:#4b5563">No objectives listed.</p>';
   } else if (tab === 'notes') {
     const notes = lesson.notes || 'No notes available.';
     const paragraphs = notes.split('\n').filter(Boolean).map(p => `<p>${p}</p>`).join('');
@@ -1566,7 +1566,7 @@ const renderTabContent = (tab, lesson) => {
           </div>
         </a>`;
     }).join('');
-    el.innerHTML = list ? `<div class="resources-list">${list}</div>` : '<p style="color:#999">No resources available.</p>';
+    el.innerHTML = list ? `<div class="resources-list">${list}</div>` : '<p style="color:#4b5563">No resources available.</p>';
   }
 };
 
@@ -1967,7 +1967,7 @@ const formatDate = (dateStr) => {
 
 const loadDiscussions = async (courseId) => {
   const container = byId('community-content');
-  container.innerHTML = '<p style="text-align:center;padding:40px;color:#aaa;">Loading discussions...</p>';
+  container.innerHTML = '<p style="text-align:center;padding:40px;color:#cbd5e1;">Loading discussions...</p>';
   try {
     const token = localStorage.getItem('lms_token');
     const res = await fetch('/api/discussions?courseId=' + encodeURIComponent(courseId), {
@@ -2064,7 +2064,7 @@ const createDiscussion = async (courseId) => {
 
 const viewThread = async (threadId, courseId) => {
   const container = byId('community-content');
-  container.innerHTML = '<p style="text-align:center;padding:40px;color:#aaa;">Loading thread...</p>';
+  container.innerHTML = '<p style="text-align:center;padding:40px;color:#cbd5e1;">Loading thread...</p>';
   try {
     const token = localStorage.getItem('lms_token');
     const [threadsRes, repliesRes] = await Promise.all([
